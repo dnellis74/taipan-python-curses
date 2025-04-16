@@ -1472,166 +1472,6 @@ class TaipanGame:
 
             # Update battle stats
             self.fight_stats(num_ships, orders)
-
-            # Handle running or throwing cargo
-            if orders == 2 or orders == 3:
-                if orders == 2:
-                    self.stdscr.move(3, 0)
-                    self.stdscr.clrtoeol()
-                    self.stdscr.addstr("Aye, we'll run, Taipan.")
-                    self.stdscr.refresh()
-                    self.stdscr.timeout(M_PAUSE)
-                    self.stdscr.getch()
-                    self.stdscr.timeout(-1)
-
-                ok += ik
-                ik += 1
-                assert ok > 0  # Prevent division by zero
-                assert ik > 0  # Prevent division by zero
-
-                if random.randint(0, ok - 1) > random.randint(0, num_ships - 1):
-                    curses.flushinp()
-                    self.stdscr.move(3, 0)
-                    self.stdscr.clrtoeol()
-                    self.stdscr.addstr("We got away from 'em, Taipan!")
-                    self.stdscr.refresh()
-                    self.stdscr.timeout(M_PAUSE)
-                    self.stdscr.getch()
-                    self.stdscr.timeout(-1)
-                    num_ships = 0
-                else:
-                    self.stdscr.move(3, 0)
-                    self.stdscr.clrtoeol()
-                    self.stdscr.addstr("Couldn't lose 'em.")
-                    self.stdscr.refresh()
-                    self.stdscr.timeout(M_PAUSE)
-                    self.stdscr.getch()
-                    self.stdscr.timeout(-1)
-
-                    if num_ships > 2 and random.randint(0, 4) == 0:
-                        lost = (random.randint(0, num_ships - 1) // 2) + 1
-
-                        num_ships -= lost
-                        self.fight_stats(num_ships, orders)
-                        self.stdscr.move(3, 0)
-                        self.stdscr.clrtoeol()
-                        self.stdscr.addstr(f"But we escaped from {lost} of 'em!")
-
-                        if num_ships <= 10:
-                            for i in range(9, -1, -1):
-                                if num_on_screen > num_ships and ships_on_screen[i] > 0:
-                                    ships_on_screen[i] = 0
-                                    num_on_screen -= 1
-
-                                    x = ((i + 1) * 10) if i < 5 else ((i - 4) * 10)
-                                    y = 6 if i < 5 else 12
-                                    self.clear_lorcha(x, y)
-                                    self.stdscr.refresh()
-                                    time.sleep(0.1)
-
-                            if num_ships == num_on_screen:
-                                self.stdscr.move(11, 62)
-                                self.stdscr.addstr(" ")
-                                self.stdscr.refresh()
-
-                        self.stdscr.move(16, 0)
-                        self.stdscr.refresh()
-                        self.stdscr.timeout(M_PAUSE)
-                        input_char = self.stdscr.getch()
-                        self.stdscr.timeout(-1)
-
-                        if input_char in [ord('F'), ord('f')]:
-                            orders = 1
-                        elif input_char in [ord('R'), ord('r')]:
-                            orders = 2
-                        elif input_char in [ord('T'), ord('t')]:
-                            orders = 3
-
-            # Handle throwing cargo
-            if orders == 3:
-                choice = 0
-                amount = 0
-                total = 0
-
-                self.stdscr.move(18, 0)
-                self.stdscr.clrtobot()
-                self.stdscr.addstr("You have the following on board, Taipan:")
-                self.stdscr.move(19, 4)
-                self.stdscr.addstr(f"Opium: {self.hold_[0]}")
-                self.stdscr.move(19, 24)
-                self.stdscr.addstr(f"Silk: {self.hold_[1]}")
-                self.stdscr.move(20, 5)
-                self.stdscr.addstr(f"Arms: {self.hold_[2]}")
-                self.stdscr.move(20, 21)
-                self.stdscr.addstr(f"General: {self.hold_[3]}")
-
-                self.stdscr.move(3, 0)
-                self.stdscr.clrtoeol()
-                self.stdscr.addstr("What shall I throw overboard, Taipan? ")
-                self.stdscr.refresh()
-
-                while choice not in [ord('O'), ord('o'), ord('S'), ord('s'), 
-                                   ord('A'), ord('a'), ord('G'), ord('g'), ord('*')]:
-                    choice = self.get_one()
-
-                if choice in [ord('O'), ord('o')]:
-                    choice = 0
-                elif choice in [ord('S'), ord('s')]:
-                    choice = 1
-                elif choice in [ord('A'), ord('a')]:
-                    choice = 2
-                elif choice in [ord('G'), ord('g')]:
-                    choice = 3
-                else:
-                    choice = 4
-
-                if choice < 4:
-                    self.stdscr.move(3, 0)
-                    self.stdscr.clrtoeol()
-                    self.stdscr.addstr("How much, Taipan? ")
-                    self.stdscr.refresh()
-
-                    amount = self.get_num(9)
-                    if self.hold_[choice] > 0 and (amount == -1 or amount > self.hold_[choice]):
-                        amount = self.hold_[choice]
-                    total = self.hold_[choice]
-                else:
-                    total = sum(self.hold_)
-
-                if total > 0:
-                    self.stdscr.move(3, 0)
-                    self.stdscr.clrtoeol()
-                    self.stdscr.addstr("Let's hope we lose 'em, Taipan!")
-                    if choice < 4:
-                        self.hold_[choice] -= amount
-                        self.hold += amount
-                        ok += (amount // 10)
-                    else:
-                        self.hold_[0] = 0
-                        self.hold_[1] = 0
-                        self.hold_[2] = 0
-                        self.hold_[3] = 0
-                        self.hold += total
-                        ok += (total // 10)
-                    self.stdscr.move(18, 0)
-                    self.stdscr.clrtobot()
-                    self.stdscr.refresh()
-
-                    self.stdscr.timeout(M_PAUSE)
-                    self.stdscr.getch()
-                    self.stdscr.timeout(-1)
-                else:
-                    self.stdscr.move(3, 0)
-                    self.stdscr.clrtoeol()
-                    self.stdscr.addstr("There's nothing there, Taipan!")
-                    self.stdscr.move(18, 0)
-                    self.stdscr.clrtobot()
-                    self.stdscr.refresh()
-
-                    self.stdscr.timeout(M_PAUSE)
-                    self.stdscr.getch()
-                    self.stdscr.timeout(-1)
-
             # Handle fighting
             if orders == 1 and self.guns > 0:
                 ok = 3
@@ -1807,7 +1647,100 @@ class TaipanGame:
                         orders = 2
                     elif input_char in [ord('T'), ord('t')]:
                         orders = 3
-            elif orders == 1:
+            elif orders == 1 and self.guns == 0:
+                self.stdscr.move(3, 0)
+                self.stdscr.clrtoeol()
+                self.stdscr.addstr("We have no guns, Taipan!!")
+                self.stdscr.refresh()
+                self.stdscr.timeout(3000)
+                input_char = self.stdscr.getch()
+                self.stdscr.timeout(-1)
+            # Handle throwing cargo
+            elif orders == 3:
+                choice = 0
+                amount = 0
+                total = 0
+
+                self.stdscr.move(18, 0)
+                self.stdscr.clrtobot()
+                self.stdscr.addstr("You have the following on board, Taipan:")
+                self.stdscr.move(19, 4)
+                self.stdscr.addstr(f"Opium: {self.hold_[0]}")
+                self.stdscr.move(19, 24)
+                self.stdscr.addstr(f"Silk: {self.hold_[1]}")
+                self.stdscr.move(20, 5)
+                self.stdscr.addstr(f"Arms: {self.hold_[2]}")
+                self.stdscr.move(20, 21)
+                self.stdscr.addstr(f"General: {self.hold_[3]}")
+
+                self.stdscr.move(3, 0)
+                self.stdscr.clrtoeol()
+                self.stdscr.addstr("What shall I throw overboard, Taipan? ")
+                self.stdscr.refresh()
+
+                while choice not in [ord('O'), ord('o'), ord('S'), ord('s'), 
+                                   ord('A'), ord('a'), ord('G'), ord('g'), ord('*')]:
+                    choice = self.get_one()
+
+                if choice in [ord('O'), ord('o')]:
+                    choice = 0
+                elif choice in [ord('S'), ord('s')]:
+                    choice = 1
+                elif choice in [ord('A'), ord('a')]:
+                    choice = 2
+                elif choice in [ord('G'), ord('g')]:
+                    choice = 3
+                else:
+                    choice = 4
+
+                if choice < 4:
+                    self.stdscr.move(3, 0)
+                    self.stdscr.clrtoeol()
+                    self.stdscr.addstr("How much, Taipan? ")
+                    self.stdscr.refresh()
+
+                    amount = self.get_num(9)
+                    if self.hold_[choice] > 0 and (amount == -1 or amount > self.hold_[choice]):
+                        amount = self.hold_[choice]
+                    total = self.hold_[choice]
+                else:
+                    total = sum(self.hold_)
+
+                if total > 0:
+                    self.stdscr.move(3, 0)
+                    self.stdscr.clrtoeol()
+                    self.stdscr.addstr("Let's hope we lose 'em, Taipan!")
+                    if choice < 4:
+                        self.hold_[choice] -= amount
+                        self.hold += amount
+                        ok += (amount // 10)
+                    else:
+                        self.hold_[0] = 0
+                        self.hold_[1] = 0
+                        self.hold_[2] = 0
+                        self.hold_[3] = 0
+                        self.hold += total
+                        ok += (total // 10)
+                    self.stdscr.move(18, 0)
+                    self.stdscr.clrtobot()
+                    self.stdscr.refresh()
+
+                    self.stdscr.timeout(M_PAUSE)
+                    self.stdscr.getch()
+                    self.stdscr.timeout(-1)
+                else:
+                    self.stdscr.move(3, 0)
+                    self.stdscr.clrtoeol()
+                    self.stdscr.addstr("There's nothing there, Taipan!")
+                    self.stdscr.move(18, 0)
+                    self.stdscr.clrtobot()
+                    self.stdscr.refresh()
+
+                    self.stdscr.timeout(M_PAUSE)
+                    self.stdscr.getch()
+                    self.stdscr.timeout(-1)
+
+            
                 self.stdscr.move(3, 0)
                 self.stdscr.clrtoeol()
                 self.stdscr.addstr("We have no guns, Taipan!!")
@@ -1815,6 +1748,80 @@ class TaipanGame:
                 self.stdscr.timeout(M_PAUSE)
                 self.stdscr.getch()
                 self.stdscr.timeout(-1)
+
+            # Handle running or throwing cargo
+            if orders == 2 or orders == 3:
+                if orders == 2:
+                    self.stdscr.move(3, 0)
+                    self.stdscr.clrtoeol()
+                    self.stdscr.addstr("Aye, we'll run, Taipan.")
+                    self.stdscr.refresh()
+                    self.stdscr.timeout(M_PAUSE)
+                    self.stdscr.getch()
+                    self.stdscr.timeout(-1)
+
+                ok += ik
+                ik += 1
+                assert ok > 0  # Prevent division by zero
+                assert ik > 0  # Prevent division by zero
+
+                if random.randint(0, ok - 1) > random.randint(0, num_ships - 1):
+                    curses.flushinp()
+                    self.stdscr.move(3, 0)
+                    self.stdscr.clrtoeol()
+                    self.stdscr.addstr("We got away from 'em, Taipan!")
+                    self.stdscr.refresh()
+                    self.stdscr.timeout(M_PAUSE)
+                    self.stdscr.getch()
+                    self.stdscr.timeout(-1)
+                    num_ships = 0
+                else:
+                    self.stdscr.move(3, 0)
+                    self.stdscr.clrtoeol()
+                    self.stdscr.addstr("Couldn't lose 'em.")
+                    self.stdscr.refresh()
+                    self.stdscr.timeout(M_PAUSE)
+                    self.stdscr.getch()
+                    self.stdscr.timeout(-1)
+
+                    if num_ships > 2 and random.randint(0, 4) == 0:
+                        lost = (random.randint(0, num_ships - 1) // 2) + 1
+
+                        num_ships -= lost
+                        self.fight_stats(num_ships, orders)
+                        self.stdscr.move(3, 0)
+                        self.stdscr.clrtoeol()
+                        self.stdscr.addstr(f"But we escaped from {lost} of 'em!")
+
+                        if num_ships <= 10:
+                            for i in range(9, -1, -1):
+                                if num_on_screen > num_ships and ships_on_screen[i] > 0:
+                                    ships_on_screen[i] = 0
+                                    num_on_screen -= 1
+
+                                    x = ((i + 1) * 10) if i < 5 else ((i - 4) * 10)
+                                    y = 6 if i < 5 else 12
+                                    self.clear_lorcha(x, y)
+                                    self.stdscr.refresh()
+                                    time.sleep(0.1)
+
+                            if num_ships == num_on_screen:
+                                self.stdscr.move(11, 62)
+                                self.stdscr.addstr(" ")
+                                self.stdscr.refresh()
+
+                        self.stdscr.move(16, 0)
+                        self.stdscr.refresh()
+                        self.stdscr.timeout(M_PAUSE)
+                        input_char = self.stdscr.getch()
+                        self.stdscr.timeout(-1)
+
+                        if input_char in [ord('F'), ord('f')]:
+                            orders = 1
+                        elif input_char in [ord('R'), ord('r')]:
+                            orders = 2
+                        elif input_char in [ord('T'), ord('t')]:
+                            orders = 3
 
             # Handle enemy firing
             if num_ships > 0:
@@ -1910,8 +1917,6 @@ class TaipanGame:
                 return self.BATTLE_WON  # Victory!
             else:
                 return self.BATTLE_FLED  # Ran and got away.
-
-        return self.BATTLE_NOT_FINISHED  # Default return for now
 
     def draw_lorcha(self, x: int, y: int) -> None:
         """Draw a lorcha (ship) at given coordinates"""
@@ -2196,7 +2201,7 @@ class TaipanGame:
         self.stdscr.attroff(curses.A_REVERSE)
         self.stdscr.addstr("         50,000 and over |\n")
         self.stdscr.addstr("|")
-        if (self.cash < L_PAUSE0) and (self.cash > 7999):
+        if (self.cash < L_PAUSE) and (self.cash > 7999):
             self.stdscr.attron(curses.A_REVERSE)
         self.stdscr.addstr("Master Taipan")
         self.stdscr.attroff(curses.A_REVERSE)
