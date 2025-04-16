@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "taipan-vanilla"
+version = "0.1.0"
+description = "Straight curses port"
+authors = ["David Nellis <dnellis74@gmail.com>"]
+readme = "README.md"
+packages = [{include = "python"}]
+
+[tool.poetry.dependencies]
+python = ">=3.9.20"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
