@@ -28,7 +28,7 @@ ESCAPE = 27
 NEWLINE = 10
 
 # Debug mode
-DEBUG = True
+DEBUG = False
 
 M_PAUSE = 3000
 L_PAUSE = 5000
@@ -1432,7 +1432,8 @@ class TaipanGame:
             self.stdscr.move(16, 0)
             self.stdscr.addstr("\n")
             self.stdscr.refresh()
-            self.stdscr.timeout(M_PAUSE)
+            # This pause is used to allow the player to read the message
+            self.stdscr.timeout(3000)
             input_char = self.stdscr.getch()
             self.stdscr.timeout(-1)
 
