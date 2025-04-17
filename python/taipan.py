@@ -21,6 +21,7 @@ from constants import (
     SHANGHAI, NAGASAKI, SAIGON, MANILA, SINGAPORE, BATAVIA, CRITICAL, POOR,
     FAIR, GOOD, PRIME, PERFECT
 )
+from mchenry import McHenry
 
 class TaipanGame:
     def __init__(self):
@@ -91,6 +92,8 @@ class TaipanGame:
         self.BATTLE_INTERRUPTED = BATTLE_INTERRUPTED
         self.BATTLE_FLED = BATTLE_FLED
         self.BATTLE_LOST = BATTLE_LOST
+
+        self.mchenry_handler = McHenry(self)
 
     def init_curses(self):
         """Initialize curses and set up the screen"""
@@ -883,8 +886,6 @@ class TaipanGame:
             self.stdscr.addstr("I buy, Taipan: ")
             self.stdscr.refresh()
 
-
-
             amount = self.get_num(9)
             if amount == -1:
                 amount = self.cash // self.price[choice]
@@ -1356,107 +1357,7 @@ class TaipanGame:
 
     def mchenry(self) -> None:
         """Handle ship repairs in Hong Kong"""
-        choice = 0
-
-        self.stdscr.move(16, 0)
-        self.stdscr.clrtobot()
-        self.stdscr.addstr("Comprador's Report\n\n")
-        self.stdscr.addstr("Taipan, Mc Henry from the Hong Kong\n")
-        self.stdscr.addstr("Shipyards has arrived!!  He says, \"I see\n")
-        self.stdscr.addstr("ye've a wee bit of damage to yer ship.\n")
-        self.stdscr.addstr("Will ye be wanting repairs? ")
-        self.stdscr.refresh()
-
-        while choice not in [ord('Y'), ord('y'), ord('N'), ord('n')]:
-            choice = self.get_one()
-
-        if choice in [ord('Y'), ord('y')]:
-            percent = int((self.damage / self.capacity) * 100)
-            time = ((self.year - 1860) * 12) + self.month
-
-            br = int((((60 * (time + 3) / 4) * random.random() +
-                     25 * (time + 3) / 4) * self.capacity / 50))
-            repair_price = (br * self.damage) + 1
-            amount = 0
-            diff = 0
-
-            self.stdscr.move(18, 0)
-            self.stdscr.clrtobot()
-            self.stdscr.addstr(f"Och, 'tis a pity to be {percent}% damaged.\n")
-            self.stdscr.addstr(f"We can fix yer whole ship for {repair_price},\n")
-            self.stdscr.addstr("or make partial repairs if you wish.\n")
-            self.stdscr.addstr("How much will ye spend? ")
-            self.stdscr.refresh()
-
-            while True:
-                amount = self.get_num(9)
-                if amount == -1:
-                    amount = self.cash
-
-                if amount <= self.cash:
-                    self.cash -= amount
-                    assert br > 0  # Don't divide by zero
-                    self.damage -= int((amount / br) + 0.5)
-                    self.damage = max(0, self.damage)
-                    self.port_stats()
-                    self.stdscr.refresh()
-                    break
-                else:
-                    self.stdscr.move(18, 0)
-                    self.stdscr.clrtobot()
-                    self.stdscr.addstr("Taipan, you do not have enough cash!!\n\n")
-                    self.stdscr.refresh()
-
-                    self.stdscr.timeout(M_PAUSE)
-                    self.stdscr.getch()
-                    self.stdscr.timeout(-1)
-
-                    self.stdscr.addstr("Do you want Elder Brother Wu to make up\n")
-                    self.stdscr.addstr("the difference for you? ")
-                    choice = 0
-                    while choice not in [ord('Y'), ord('y'), ord('N'), ord('n')]:
-                        choice = self.get_one()
-
-                    if choice in [ord('Y'), ord('y')]:
-                        diff = amount - self.cash
-                        self.debt += diff
-                        self.cash = 0
-
-                        self.stdscr.move(18, 0)
-                        self.stdscr.clrtobot()
-                        self.stdscr.addstr("Elder Brother has given McHenry the\n")
-                        self.stdscr.addstr("difference between what he wanted and\n")
-                        self.stdscr.addstr("your cash on hand and added the same\n")
-                        self.stdscr.addstr("amount to your debt.\n")
-
-                        self.stdscr.refresh()
-                        self.stdscr.timeout(L_PAUSE)
-                        self.stdscr.getch()
-                        self.stdscr.timeout(-1)
-                    else:
-                        self.cash = 0
-
-                        self.stdscr.addstr("Very well. Elder Brother Wu will not pay\n")
-                        self.stdscr.addstr("McHenry the difference.  I would be very\n")
-                        self.stdscr.addstr("wary of pirates if I were you, Taipan.\n")
-
-                        self.stdscr.refresh()
-                        self.stdscr.timeout(L_PAUSE)
-                        self.stdscr.getch()
-                        self.stdscr.timeout(-1)
-
-                if amount <= self.cash + diff:
-                    self.cash = self.cash - amount + diff
-                    assert br > 0  # Don't divide by zero
-                    self.damage -= int((amount / br) + 0.5)
-                    self.damage = max(0, self.damage)
-                    self.port_stats()
-                    self.stdscr.refresh()
-                    break
-                else:
-                    self.stdscr.move(18, 0)
-                    self.stdscr.clrtobot()
-                    self.stdscr.addstr("McHenry does not work for free, Taipan!\n")
+        self.mchenry_handler.offer_repairs()
 
     def retire(self) -> None:
         """Handle retirement sequence"""
