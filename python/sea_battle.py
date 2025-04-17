@@ -644,7 +644,7 @@ class SeaBattle:
                     (random.randint(0, 99) < int((self.game.damage / self.game.capacity) * 100) or
                      int((self.game.damage / self.game.capacity) * 100) > 80)):
                     i = 1
-                    if not self.game.DEBUG:  # Only prevent gun loss in debug mode
+                    if not DEBUG:  # Only prevent gun loss in debug mode
                         self.game.guns -= 1
                         self.game.hold += 10
                     self.fight_stats(num_ships, self.orders)
