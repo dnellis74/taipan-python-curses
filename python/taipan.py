@@ -22,7 +22,7 @@ from constants import (
     FAIR, GOOD, PRIME, PERFECT
 )
 from mchenry import McHenry
-from shared import fancy_numbers
+from shared import fancy_numbers, get_one, get_num
 
 class TaipanGame:
     def __init__(self):
@@ -258,7 +258,7 @@ class TaipanGame:
             self.firm = ""
 
             while character < 22:
-                input_char = self.stdscr.getch()
+                input_char = get_one(self.stdscr)
                 if input_char == ord('\n'):
                     break
                 elif ((input_char == 8 or input_char == 127) and character == 0):
@@ -310,7 +310,7 @@ class TaipanGame:
                 self.stdscr.clrtobot()
                 self.stdscr.addstr("          ?")
                 self.stdscr.refresh()
-                choice = self.stdscr.getch()
+                choice = get_one(self.stdscr)
 
             if choice == ord('1'):
                 self.cash = 400
@@ -468,7 +468,7 @@ class TaipanGame:
                     self.stdscr.addstr("cargo, Wheedle Wu, Quit trading, or Retire? ")
                     self.stdscr.refresh()
 
-                    choice = self.get_one()
+                    choice = get_one(self.stdscr)
                     if choice in [ord('B'), ord('b'), ord('S'), ord('s'), 
                                 ord('V'), ord('v'), ord('T'), ord('t'),
                                 ord('W'), ord('w'), ord('Q'), ord('q'),
@@ -479,7 +479,7 @@ class TaipanGame:
                     self.stdscr.addstr("cargo, Wheedle Wu, or Quit trading? ")
                     self.stdscr.refresh()
 
-                    choice = self.get_one()
+                    choice = get_one(self.stdscr)
                     if choice in [ord('B'), ord('b'), ord('S'), ord('s'),
                                 ord('V'), ord('v'), ord('T'), ord('t'),
                                 ord('W'), ord('w'), ord('Q'), ord('q')]:
@@ -488,7 +488,7 @@ class TaipanGame:
                 self.stdscr.addstr("Shall I Buy, Sell, or Quit trading? ")
                 self.stdscr.refresh()
 
-                choice = self.get_one()
+                choice = get_one(self.stdscr)
                 if choice in [ord('B'), ord('b'), ord('S'), ord('s'),
                             ord('Q'), ord('q')]:
                     break
@@ -519,7 +519,7 @@ class TaipanGame:
         self.stdscr.refresh()
 
         while choice not in [ord('Y'), ord('y'), ord('N'), ord('n')]:
-            choice = self.get_one()
+            choice = get_one(self.stdscr)
 
         if choice in [ord('Y'), ord('y')]:
             self.cash -= amount
@@ -551,7 +551,7 @@ class TaipanGame:
         self.stdscr.refresh()
 
         while choice not in [ord('Y'), ord('y'), ord('N'), ord('n')]:
-            choice = self.get_one()
+            choice = get_one(self.stdscr)
 
         if choice in [ord('Y'), ord('y')]:
             self.cash -= amount
@@ -585,7 +585,7 @@ class TaipanGame:
             self.stdscr.clrtobot()
             self.stdscr.addstr("Goddess.  Will you pay? ")
             self.stdscr.refresh()
-            choice = self.get_one()
+            choice = get_one(self.stdscr)
 
         if choice in [ord('Y'), ord('y')]:
             if amount <= self.cash:
@@ -605,7 +605,7 @@ class TaipanGame:
                 self.stdscr.addstr("the difference for you? ")
                 choice = 0
                 while choice not in [ord('Y'), ord('y'), ord('N'), ord('n')]:
-                    choice = self.get_one()
+                    choice = get_one(self.stdscr)
 
                 if choice in [ord('Y'), ord('y')]:
                     amount -= self.cash
@@ -654,7 +654,7 @@ class TaipanGame:
             self.stdscr.clrtoeol()
             self.stdscr.refresh()
 
-            choice = self.get_one()
+            choice = get_one(self.stdscr)
             if choice in [ord('N'), ord('n')]:
                 break
             elif choice in [ord('Y'), ord('y')]:
@@ -678,7 +678,7 @@ class TaipanGame:
                         self.stdscr.addstr(f"{j}. Are you willing, Taipan? ")
                         self.stdscr.refresh()
 
-                        choice = self.get_one()
+                        choice = get_one(self.stdscr)
                         if choice in [ord('N'), ord('n')]:
                             self.stdscr.move(16, 0)
                             self.stdscr.clrtobot()
@@ -716,7 +716,7 @@ class TaipanGame:
                     self.stdscr.addstr("him? ")
                     self.stdscr.refresh()
 
-                    wu = self.get_num(9)
+                    wu = get_num(self.stdscr, 9)
                     if wu == -1:
                         wu = min(self.cash, self.debt)
                     if wu <= self.cash:
@@ -753,7 +753,7 @@ class TaipanGame:
                     self.stdscr.addstr("borrow? ")
                     self.stdscr.refresh()
 
-                    wu = self.get_num(9)
+                    wu = get_num(self.stdscr, 9)
                     if wu == -1:
                         wu = self.cash * 2
                     if wu <= (self.cash * 2):
@@ -825,7 +825,7 @@ class TaipanGame:
             self.stdscr.addstr("What do you wish me to buy, Taipan? ")
             self.stdscr.refresh()
 
-            choice_char = self.get_one()
+            choice_char = get_one(self.stdscr)
             if choice_char in [ord('O'), ord('o')]:
                 choice = 0
                 break
@@ -839,7 +839,7 @@ class TaipanGame:
                 choice = 3
                 break
             
-                    # Get amount to buy
+        # Get amount to buy
         while True:
             self.stdscr.move(21, 42)
             self.stdscr.clrtobot()
@@ -877,7 +877,7 @@ class TaipanGame:
             self.stdscr.addstr("I buy, Taipan: ")
             self.stdscr.refresh()
 
-            amount = self.get_num(9)
+            amount = get_num(self.stdscr, 9)
             if amount == -1:
                 amount = self.cash // self.price[choice]
             if amount <= self.cash // self.price[choice]:
@@ -901,7 +901,7 @@ class TaipanGame:
             self.stdscr.addstr("What do you wish me to sell, Taipan? ")
             self.stdscr.refresh()
 
-            choice_char = self.get_one()
+            choice_char = get_one(self.stdscr)
             if choice_char in [ord('O'), ord('o')]:
                 choice = 0
                 break
@@ -923,7 +923,7 @@ class TaipanGame:
             self.stdscr.addstr("I sell, Taipan: ")
             self.stdscr.refresh()
 
-            amount = self.get_num(9)
+            amount = get_num(self.stdscr, 9)
             if amount == -1:
                 amount = self.hold_[choice]
             if self.hold_[choice] >= amount:
@@ -945,7 +945,7 @@ class TaipanGame:
             self.stdscr.addstr("How much will you deposit? ")
             self.stdscr.refresh()
 
-            amount = self.get_num(9)
+            amount = get_num(self.stdscr, 9)
             if amount == -1:
                 amount = self.cash
             if amount <= self.cash:
@@ -972,7 +972,7 @@ class TaipanGame:
             self.stdscr.addstr("How much will you withdraw? ")
             self.stdscr.refresh()
 
-            amount = self.get_num(9)
+            amount = get_num(self.stdscr, 9)
             if amount == -1:
                 amount = self.bank
             if amount <= self.bank:
@@ -1019,7 +1019,7 @@ class TaipanGame:
                     self.stdscr.addstr("to the warehouse, Taipan? ")
                     self.stdscr.refresh()
 
-                    amount = self.get_num(9)
+                    amount = get_num(self.stdscr, 9)
                     if amount == -1:
                         amount = self.hold_[i]
                     if amount <= self.hold_[i]:
@@ -1057,7 +1057,7 @@ class TaipanGame:
                     self.stdscr.addstr("to the hold, Taipan? ")
                     self.stdscr.refresh()
 
-                    amount = self.get_num(9)
+                    amount = get_num(self.stdscr, 9)
                     if amount == -1:
                         amount = self.hkw_[i]
                     if amount <= self.hkw_[i]:
@@ -1104,7 +1104,7 @@ class TaipanGame:
             self.stdscr.move(21, 13)
             self.stdscr.clrtobot()
 
-            choice = self.get_num(1)
+            choice = get_num(self.stdscr, 1)
 
             if choice == self.port:
                 self.stdscr.addstr("\n\nYou're already here, Taipan.")
@@ -1379,7 +1379,7 @@ class TaipanGame:
             self.stdscr.clrtobot()
             self.stdscr.addstr("Play again? ")
             self.stdscr.refresh()
-            choice = self.get_one()
+            choice = get_one(self.stdscr)
 
         if choice in [ord('Y'), ord('y')]:
             self.bank = 0

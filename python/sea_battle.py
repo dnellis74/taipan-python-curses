@@ -6,6 +6,7 @@ from constants import (
     BATTLE_FLED, BATTLE_LOST, ANIMATION_PAUSE, M_PAUSE, L_PAUSE, BASE_ENEMY_HEALTH,
     BASE_ENEMY_DAMAGE
 )
+from shared import get_one
 
 class SeaBattle:
     def __init__(self, game):
@@ -451,7 +452,7 @@ class SeaBattle:
 
                 while choice not in [ord('O'), ord('o'), ord('S'), ord('s'), 
                                    ord('A'), ord('a'), ord('G'), ord('g'), ord('*')]:
-                    choice = self.game.get_one()
+                    choice = get_one(self.game.stdscr)
 
                 if choice in [ord('O'), ord('o')]:
                     choice = 0
