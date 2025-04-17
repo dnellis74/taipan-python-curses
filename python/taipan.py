@@ -22,6 +22,7 @@ from constants import (
     FAIR, GOOD, PRIME, PERFECT
 )
 from mchenry import McHenry
+from shared import fancy_numbers
 
 class TaipanGame:
     def __init__(self):
@@ -30,7 +31,6 @@ class TaipanGame:
 
         # Game state
         self.firm = ""  # Firm name (was char[23])
-        self.fancy_num = ""  # For number formatting (was char[13])
 
         # Item and location names
         self.items = ["Opium", "Silk", "Arms", "General Cargo"]
@@ -92,8 +92,6 @@ class TaipanGame:
         self.BATTLE_INTERRUPTED = BATTLE_INTERRUPTED
         self.BATTLE_FLED = BATTLE_FLED
         self.BATTLE_LOST = BATTLE_LOST
-
-        self.mchenry_handler = McHenry(self)
 
     def init_curses(self):
         """Initialize curses and set up the screen"""
@@ -219,6 +217,8 @@ class TaipanGame:
                 number += chr(input_char)
                 character += 1
                 self.stdscr.refresh()
+            elif input_char < 0 or input_char > 255:  # Skip invalid character codes
+                continue
             elif not chr(input_char).isdigit():
                 self.stdscr.refresh()
             else:
@@ -388,8 +388,7 @@ class TaipanGame:
 
         # Display cash
         self.stdscr.move(14, 5)
-        self.fancy_numbers(self.cash, self.fancy_num)
-        self.stdscr.addstr(self.fancy_num)
+        self.stdscr.addstr(fancy_numbers(self.cash))
 
         # Calculate and display warehouse usage
         in_use = sum(self.hkw_)
@@ -401,8 +400,7 @@ class TaipanGame:
 
         # Display bank balance
         self.stdscr.move(14, 25)
-        self.fancy_numbers(self.bank, self.fancy_num)
-        self.stdscr.addstr(self.fancy_num)
+        self.stdscr.addstr(fancy_numbers(self.bank))
 
         # Display date
         self.stdscr.move(3, 42)
@@ -422,11 +420,11 @@ class TaipanGame:
 
         # Display debt
         self.stdscr.move(9, 41)
-        self.fancy_numbers(self.debt, self.fancy_num)
-        spacer = (12 - len(self.fancy_num)) // 2
+        debt_str = fancy_numbers(self.debt)
+        spacer = (12 - len(debt_str)) // 2
         self.stdscr.addstr(" " * spacer)
         self.stdscr.attron(curses.A_REVERSE)
-        self.stdscr.addstr(self.fancy_num)
+        self.stdscr.addstr(debt_str)
         self.stdscr.attroff(curses.A_REVERSE)
 
         # Display ship status
@@ -506,8 +504,6 @@ class TaipanGame:
         if self.cash < amount:
             return
 
-        self.fancy_numbers(amount, self.fancy_num)
-
         self.stdscr.move(16, 0)
         self.stdscr.clrtobot()
         self.stdscr.addstr("Comprador's Report\n\n")
@@ -519,7 +515,7 @@ class TaipanGame:
         else:
             self.stdscr.addstr("fine")
         self.stdscr.addstr("\nship for one with 50 more capacity by\n")
-        self.stdscr.addstr(f"paying an additional {self.fancy_num}, Taipan? ")
+        self.stdscr.addstr(f"paying an additional {fancy_numbers(amount)}, Taipan? ")
         self.stdscr.refresh()
 
         while choice not in [ord('Y'), ord('y'), ord('N'), ord('n')]:
@@ -546,13 +542,12 @@ class TaipanGame:
         if self.cash < amount or self.hold < 10:
             return
 
-        self.fancy_numbers(amount, self.fancy_num)
 
         self.stdscr.move(16, 0)
         self.stdscr.clrtobot()
         self.stdscr.addstr("Comprador's Report\n\n")
         self.stdscr.addstr("Do you wish to buy a ship's gun\n")
-        self.stdscr.addstr(f"for {self.fancy_num}, Taipan? ")
+        self.stdscr.addstr(f"for {fancy_numbers(amount)}, Taipan? ")
         self.stdscr.refresh()
 
         while choice not in [ord('Y'), ord('y'), ord('N'), ord('n')]:
@@ -579,12 +574,10 @@ class TaipanGame:
 
         amount = ((self.cash / i) * random.random()) + j
 
-        self.fancy_numbers(amount, self.fancy_num)
-
         self.stdscr.move(16, 0)
         self.stdscr.clrtobot()
         self.stdscr.addstr("Comprador's Report\n\n")
-        self.stdscr.addstr(f"Li Yuen asks {self.fancy_num} in donation\n")
+        self.stdscr.addstr(f"Li Yuen asks {fancy_numbers(amount)} in donation\n")
         self.stdscr.addstr("to the temple of Tin Hau, the Sea\n")
 
         while choice not in [ord('Y'), ord('y'), ord('N'), ord('n')]:
@@ -728,8 +721,7 @@ class TaipanGame:
                         wu = min(self.cash, self.debt)
                     if wu <= self.cash:
                         if wu > self.debt:
-                            self.fancy_numbers(self.debt, self.fancy_num)
-                            self.stdscr.addstr(f"Taipan, you owe only {self.fancy_num}.\n")
+                            self.stdscr.addstr(f"Taipan, you owe only {fancy_numbers(self.debt)}.\n")
                             self.stdscr.addstr("Paid in full.\n")
                             self.stdscr.refresh()
                             self.stdscr.timeout(L_PAUSE)
@@ -743,8 +735,7 @@ class TaipanGame:
                     else:
                         self.stdscr.move(18, 0)
                         self.stdscr.clrtobot()
-                        self.fancy_numbers(self.cash, self.fancy_num)
-                        self.stdscr.addstr(f"Taipan, you only have {self.fancy_num}\n")
+                        self.stdscr.addstr(f"Taipan, you only have {fancy_numbers(self.cash)}\n")
                         self.stdscr.addstr("in cash.\n")
 
                         self.stdscr.refresh()
@@ -964,8 +955,7 @@ class TaipanGame:
             else:
                 self.stdscr.move(18, 0)
                 self.stdscr.clrtobot()
-                self.fancy_numbers(self.cash, self.fancy_num)
-                self.stdscr.addstr(f"Taipan, you only have {self.fancy_num}\n")
+                self.stdscr.addstr(f"Taipan, you only have {fancy_numbers(self.cash)}\n")
                 self.stdscr.addstr("in cash.\n")
                 self.stdscr.refresh()
                 self.stdscr.timeout(L_PAUSE)
@@ -990,8 +980,7 @@ class TaipanGame:
                 self.bank -= amount
                 break
             else:
-                self.fancy_numbers(self.bank, self.fancy_num)
-                self.stdscr.addstr(f"Taipan, you only have {self.fancy_num}\n")
+                self.stdscr.addstr(f"Taipan, you only have {fancy_numbers(self.bank)}\n")
                 self.stdscr.addstr("in the bank.")
                 self.stdscr.refresh()
                 self.stdscr.timeout(L_PAUSE)
@@ -1223,9 +1212,8 @@ class TaipanGame:
             self.stdscr.clrtobot()
             self.stdscr.addstr("  Captain's Report\n\n")
             if result == self.BATTLE_WON:  # Victory!
-                self.fancy_numbers(self.booty, self.fancy_num)
                 self.stdscr.addstr("We captured some booty.\n")
-                self.stdscr.addstr(f"It's worth {self.fancy_num}!")
+                self.stdscr.addstr(f"It's worth {fancy_numbers(self.booty)}!")
                 self.cash += self.booty
             elif result == self.BATTLE_FLED:  # Ran and got away.
                 self.stdscr.addstr("We made it!")
@@ -1322,62 +1310,6 @@ class TaipanGame:
         self.stdscr.getch()
         self.stdscr.timeout(-1)
 
-    def fancy_numbers(self, num: float, fancy: str) -> None:
-        """
-        Format numbers in a fancy way, converting large numbers to millions with decimal points.
-        Stores the result in the fancy string.
-        """
-        if num >= 100000000:
-            num1 = int(num / 1000000)
-            fancy = f"{num1} Million"
-        elif num >= 10000000:  # Note: Original C code had an extra zero in comment
-            num1 = int(num / 1000000)
-            num2 = int((int(num) % 1000000) / 100000)
-            if num2 > 0:
-                fancy = f"{num1}.{num2} Million"
-            else:
-                fancy = f"{num1} Million"
-        elif num >= 1000000:
-            num1 = int(num / 1000000)
-            num2 = int((int(num) % 1000000) / 10000)
-            if num2 > 0:
-                fancy = f"{num1}.{num2} Million"
-            else:
-                fancy = f"{num1} Million"
-        else:
-            fancy = str(int(num))
-        
-        # Store the result back in the fancy_num class variable
-        self.fancy_num = fancy
-
-    def sea_battle(self, id: int, num_ships: int) -> int:
-        """Handle sea battle with pirates"""
-        sea_battle = SeaBattle(self)
-        return sea_battle.battle(id, num_ships)
-
-    def mchenry(self) -> None:
-        """Handle ship repairs in Hong Kong"""
-        self.mchenry_handler.offer_repairs()
-
-    def retire(self) -> None:
-        """Handle retirement sequence"""
-        self.stdscr.move(16, 0)
-        self.stdscr.clrtobot()
-        self.stdscr.addstr("Comprador's Report\n\n")
-        self.stdscr.attron(curses.A_REVERSE)
-        self.stdscr.addstr("                         \n")
-        self.stdscr.addstr(" Y o u ' r e    a        \n")
-        self.stdscr.addstr("                         \n")
-        self.stdscr.addstr(" M I L L I O N A I R E ! \n")
-        self.stdscr.addstr("                         \n")
-        self.stdscr.attroff(curses.A_REVERSE)
-        self.stdscr.refresh()
-        self.stdscr.timeout(L_PAUSE)
-        self.stdscr.getch()
-        self.stdscr.timeout(-1)
-
-        self.final_stats()
-
     def final_stats(self) -> None:
         """Display final game statistics"""
         years = self.year - 1860
@@ -1387,8 +1319,7 @@ class TaipanGame:
         self.stdscr.clear()
         self.stdscr.addstr("Your final status:\n\n")
         self.cash = self.cash + self.bank - self.debt
-        self.fancy_numbers(self.cash, self.fancy_num)
-        self.stdscr.addstr(f"Net cash:  {self.fancy_num}\n\n")
+        self.stdscr.addstr(f"Net cash:  {fancy_numbers(self.cash)}\n\n")
         self.stdscr.addstr(f"Ship size: {self.capacity} units with {self.guns} guns\n\n")
         self.stdscr.addstr(f"You traded for {years} year")
         if years != 1:
@@ -1493,7 +1424,7 @@ class TaipanGame:
 
                 # McHenry check
                 if self.port == 1 and self.damage > 0:
-                    self.mchenry()
+                    McHenry(self).offer_repairs()
 
                 # Elder Brother Wu warning
                 if self.port == 1 and self.debt >= 10000 and self.wu_warn == 0:
@@ -1617,7 +1548,6 @@ class TaipanGame:
 
         self.port_stats()
 
-        self.fancy_numbers(fine, self.fancy_num)
         self.stdscr.move(16, 0)
         self.stdscr.clrtobot()
         self.stdscr.addstr("Comprador's Report\n\n")
@@ -1627,7 +1557,7 @@ class TaipanGame:
             self.stdscr.addstr("Opium cargo, Taipan!")
         else:
             self.stdscr.addstr("Opium cargo and have also fined you\n")
-            self.stdscr.addstr(f"{self.fancy_num}, Taipan!\n")
+            self.stdscr.addstr(f"{fancy_numbers(fine)}, Taipan!\n")
         self.stdscr.refresh()
         self.stdscr.timeout(L_PAUSE)
         self.stdscr.getch()
@@ -1669,16 +1599,39 @@ class TaipanGame:
         self.cash -= robbed
         self.port_stats()
 
-        self.fancy_numbers(robbed, self.fancy_num)
         self.stdscr.move(16, 0)
         self.stdscr.clrtobot()
         self.stdscr.addstr("Bad Joss!!\n")
         self.stdscr.addstr("You've been beaten up and\n")
-        self.stdscr.addstr(f"robbed of {self.fancy_num} in cash, Taipan!!\n")
+        self.stdscr.addstr(f"robbed of {fancy_numbers(robbed)} in cash, Taipan!!\n")
         self.stdscr.refresh()
         self.stdscr.timeout(L_PAUSE)
         self.stdscr.getch()
         self.stdscr.timeout(-1)
+
+    def sea_battle(self, id: int, num_ships: int) -> int:
+        """Handle sea battle with pirates"""
+        sea_battle = SeaBattle(self)
+        return sea_battle.battle(id, num_ships)
+
+    def retire(self) -> None:
+        """Handle retirement sequence"""
+        self.stdscr.move(16, 0)
+        self.stdscr.clrtobot()
+        self.stdscr.addstr("Comprador's Report\n\n")
+        self.stdscr.attron(curses.A_REVERSE)
+        self.stdscr.addstr("                         \n")
+        self.stdscr.addstr(" Y o u ' r e    a        \n")
+        self.stdscr.addstr("                         \n")
+        self.stdscr.addstr(" M I L L I O N A I R E ! \n")
+        self.stdscr.addstr("                         \n")
+        self.stdscr.attroff(curses.A_REVERSE)
+        self.stdscr.refresh()
+        self.stdscr.timeout(L_PAUSE)
+        self.stdscr.getch()
+        self.stdscr.timeout(-1)
+
+        self.final_stats()
 
 if __name__ == "__main__":
     game = TaipanGame()
