@@ -1,7 +1,6 @@
 import curses
 
 from constants import *
-from fancy_numbers import fancy_numbers
 from keyboard import Keyboard
 
 class Messages:
@@ -30,6 +29,31 @@ class Messages:
             self.stdscr.keypad(False)
             curses.echo()
             curses.endwin()
+            
+    def fancy_numbers(self, num: float) -> str:
+        """
+        Format numbers in a fancy way, converting large numbers to millions with decimal points.
+        Returns the formatted string.
+        """
+        if num >= 100000000:
+            num1 = int(num / 1000000)
+            return f"{num1} Million"
+        elif num >= 10000000:
+            num1 = int(num / 1000000)
+            num2 = int((int(num) % 1000000) / 100000)
+            if num2 > 0:
+                return f"{num1}.{num2} Million"
+            else:
+                return f"{num1} Million"
+        elif num >= 1000000:
+            num1 = int(num / 1000000)
+            num2 = int((int(num) % 1000000) / 10000)
+            if num2 > 0:
+                return f"{num1}.{num2} Million"
+            else:
+                return f"{num1} Million"
+        else:
+            return str(int(num))
             
     def port_stats(self, status: int,
                    firm: str, hkw_: list[int], hold: int, hold_: list[int],
@@ -82,7 +106,7 @@ class Messages:
 
         # Display cash
         self.stdscr.move(14, 5)
-        self.stdscr.addstr(fancy_numbers(cash))
+        self.stdscr.addstr(self.fancy_numbers(cash))
 
         # Calculate and display warehouse usage
         in_use = sum(hkw_)
@@ -94,7 +118,7 @@ class Messages:
 
         # Display bank balance
         self.stdscr.move(14, 25)
-        self.stdscr.addstr(fancy_numbers(bank))
+        self.stdscr.addstr(self.fancy_numbers(bank))
 
         # Display date
         self.stdscr.move(3, 42)
@@ -114,7 +138,7 @@ class Messages:
 
         # Display debt
         self.stdscr.move(9, 41)
-        debt_str = fancy_numbers(debt)
+        debt_str = self.fancy_numbers(debt)
         spacer = (12 - len(debt_str)) // 2
         self.stdscr.addstr(" " * spacer)
         self.stdscr.attron(curses.A_REVERSE)
@@ -318,7 +342,7 @@ class Messages:
         else:
             self.stdscr.addstr("fine")
         self.stdscr.addstr("\nship for one with 50 more capacity by\n")
-        self.stdscr.addstr(f"paying an additional {fancy_numbers(amount)}, Taipan? ")
+        self.stdscr.addstr(f"paying an additional {self.fancy_numbers(amount)}, Taipan? ")
         self.stdscr.refresh()
 
     def message_new_gun(self, amount: int) -> None:
@@ -326,7 +350,7 @@ class Messages:
         self.stdscr.clrtobot()
         self.stdscr.addstr("Comprador's Report\n\n")
         self.stdscr.addstr("Do you wish to buy a ship's gun\n")
-        self.stdscr.addstr(f"for {fancy_numbers(amount)}, Taipan? ")
+        self.stdscr.addstr(f"for {self.fancy_numbers(amount)}, Taipan? ")
         self.stdscr.refresh()
 
     def message_retire(self) -> None:
@@ -363,7 +387,7 @@ class Messages:
         self.stdscr.addstr("Comprador's Report\n\n")
         self.stdscr.addstr("Bad Joss!!\n")
         self.stdscr.addstr("You've been beaten up and\n")
-        self.stdscr.addstr(f"robbed of {fancy_numbers(robbed)} in cash, Taipan!!\n")
+        self.stdscr.addstr(f"robbed of {self.fancy_numbers(robbed)} in cash, Taipan!!\n")
         self.stdscr.refresh()
         self.stdscr.timeout(M_PAUSE)
         self.stdscr.getch()
@@ -390,7 +414,7 @@ class Messages:
             self.stdscr.addstr("Opium cargo, Taipan!")
         else:
             self.stdscr.addstr("Opium cargo and have also fined you\n")
-            self.stdscr.addstr(f"{fancy_numbers(fine)}, Taipan!\n")
+            self.stdscr.addstr(f"{self.fancy_numbers(fine)}, Taipan!\n")
         self.stdscr.refresh()
         self.stdscr.timeout(L_PAUSE)
         self.stdscr.getch()
@@ -456,7 +480,7 @@ class Messages:
         self.stdscr.move(16, 0)
         self.stdscr.clrtobot()
         self.stdscr.addstr("Comprador's Report\n\n")
-        self.stdscr.addstr(f"Li Yuen asks {fancy_numbers(amount)} in donation\n")
+        self.stdscr.addstr(f"Li Yuen asks {self.fancy_numbers(amount)} in donation\n")
         self.stdscr.addstr("to the temple of Tin Hau, the Sea\n")
         self.stdscr.move(20, 0)
         self.stdscr.clrtobot()
@@ -488,7 +512,7 @@ class Messages:
         """Display final game statistics and rating"""
         self.stdscr.clear()
         self.stdscr.addstr("Your final status:\n\n")
-        self.stdscr.addstr(f"Net cash:  {fancy_numbers(cash)}\n\n")
+        self.stdscr.addstr(f"Net cash:  {self.fancy_numbers(cash)}\n\n")
         self.stdscr.addstr(f"Ship size: {capacity} units with {guns} guns\n\n")
         self.stdscr.addstr(f"You traded for {years} year")
         if years != 1:
@@ -618,7 +642,7 @@ class Messages:
         """Display battle results"""
         if result == 1:  # Victory!
             self.stdscr.addstr("We captured some booty.\n")
-            self.stdscr.addstr(f"It's worth {fancy_numbers(booty)}!")
+            self.stdscr.addstr(f"It's worth {self.fancy_numbers(booty)}!")
         elif result == 3:  # Ran and got away.
             self.stdscr.addstr("We made it!")
         else:  # Ship lost!
@@ -743,7 +767,7 @@ class Messages:
         """Display message when player has insufficient cash"""
         self.stdscr.move(18, 0)
         self.stdscr.clrtobot()
-        self.stdscr.addstr(f"Taipan, you only have {fancy_numbers(cash)}\n")
+        self.stdscr.addstr(f"Taipan, you only have {self.fancy_numbers(cash)}\n")
         self.stdscr.addstr("in cash.\n")
         self.stdscr.refresh()
         self.stdscr.timeout(L_PAUSE)
@@ -752,7 +776,7 @@ class Messages:
 
     def message_insufficient_bank(self, bank: int) -> None:
         """Display message when player has insufficient bank balance"""
-        self.stdscr.addstr(f"Taipan, you only have {fancy_numbers(bank)}\n")
+        self.stdscr.addstr(f"Taipan, you only have {self.fancy_numbers(bank)}\n")
         self.stdscr.addstr("in the bank.")
         self.stdscr.refresh()
         self.stdscr.timeout(L_PAUSE)
@@ -878,7 +902,7 @@ class Messages:
 
     def message_paid_in_full(self) -> None:
         """Display message indicating debt has been paid in full"""
-        self.stdscr.addstr(f"Taipan, you owe only {fancy_numbers(self.debt)}.\n")
+        self.stdscr.addstr(f"Taipan, you owe only {self.fancy_numbers(self.debt)}.\n")
         self.stdscr.addstr("Paid in full.\n")
         self.stdscr.refresh()
         self.stdscr.timeout(L_PAUSE)
@@ -954,7 +978,7 @@ class Messages:
         self.stdscr.clrtobot()
         self.stdscr.addstr("Comprador's Report\n\n")
         self.stdscr.addstr("Taipan, Mc Henry says it will cost\n")
-        self.stdscr.addstr(f"{fancy_numbers(amount)} to repair your ship.\n")
+        self.stdscr.addstr(f"{self.fancy_numbers(amount)} to repair your ship.\n")
         self.stdscr.addstr("Will you pay? ")
         self.stdscr.refresh()
 

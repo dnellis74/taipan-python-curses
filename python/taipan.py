@@ -7,7 +7,6 @@ Based on Apple ][ program by Ronald J. Berg
 
 import random
 import os
-from fancy_numbers import fancy_numbers
 from sea_battle import SeaBattle
 from constants import *
 from messages import Messages
