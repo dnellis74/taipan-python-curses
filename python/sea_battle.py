@@ -6,7 +6,7 @@ from constants import (
     BATTLE_FLED, BATTLE_LOST, ANIMATION_PAUSE, M_PAUSE, L_PAUSE, BASE_ENEMY_HEALTH,
     BASE_ENEMY_DAMAGE
 )
-from python.keyboard import get_one
+from python.keyboard import Keyboard
 
 class SeaBattle:
     def __init__(self, game):
@@ -16,6 +16,7 @@ class SeaBattle:
         self.orders = 0
         self.ok = 0
         self.ik = 1
+        self.keyboard = Keyboard(game.stdscr)
 
     def draw_lorcha(self, x: int, y: int) -> None:
         """Draw a lorcha (ship) at given coordinates"""
@@ -449,7 +450,7 @@ class SeaBattle:
 
                 while choice not in [ord('O'), ord('o'), ord('S'), ord('s'), 
                                    ord('A'), ord('a'), ord('G'), ord('g'), ord('*')]:
-                    choice = get_one(self.game.stdscr)
+                    choice = self.keyboard.get_one()
 
                 if choice in [ord('O'), ord('o')]:
                     choice = 0

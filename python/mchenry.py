@@ -1,12 +1,14 @@
 import random
 from typing import Optional
+import curses
 
 from constants import M_PAUSE, L_PAUSE
-from python.keyboard import get_one, get_num, choice_yes_no
+from python.keyboard import Keyboard
 
 class McHenry:
     def __init__(self, game):
         self.game = game
+        self.keyboard = Keyboard(game.stdscr)
 
     def offer_repairs(self) -> None:
         """Handle McHenry's ship repair offer"""
@@ -19,7 +21,7 @@ class McHenry:
         self.game.stdscr.addstr("Will ye be wanting repairs? ")
         self.game.stdscr.refresh()
 
-        if choice_yes_no(self.game.stdscr):
+        if self.keyboard.choice_yes_no():
             self._handle_repairs()
 
     def _handle_repairs(self) -> None:
@@ -41,7 +43,7 @@ class McHenry:
         self.game.stdscr.refresh()
 
         while True:
-            amount = get_num(self.game.stdscr, 9)
+            amount = self.keyboard.get_num(9)
             # If player cancels, set amount to repair price
             if amount == -1:
                 amount = repair_price
@@ -76,7 +78,7 @@ class McHenry:
         self.game.stdscr.addstr("Do you want Elder Brother Wu to make up\n")
         self.game.stdscr.addstr("the difference for you? ")
         
-        if choice_yes_no(self.game.stdscr):
+        if self.keyboard.choice_yes_no():
             self.game.stdscr.move(18, 0)
             self.game.stdscr.clrtobot()
             self.game.stdscr.addstr("Elder Brother has given McHenry the\n")
@@ -101,4 +103,30 @@ class McHenry:
             self.game.stdscr.getch()
             self.game.stdscr.timeout(-1)
             return 0
+
+    def visit(self) -> None:
+        self.game.stdscr.clear()
+        self.game.stdscr.move(0, 0)
+        self.game.stdscr.addstr("McHenry is here, Taipan.")
+        self.game.stdscr.move(1, 0)
+        self.game.stdscr.addstr("He offers to sell you a new ship.")
+        self.game.stdscr.move(2, 0)
+        self.game.stdscr.addstr("Do you wish to buy? (Y/N)")
+        self.game.stdscr.refresh()
+        if self.keyboard.choice_yes_no():
+            self.game.stdscr.move(3, 0)
+            self.game.stdscr.addstr("How much do you wish to spend?")
+            self.game.stdscr.refresh()
+            amount = self.keyboard.get_num(9)
+            if amount > 0:
+                self.game.cash -= amount
+                self.game.capacity += amount // 10
+                self.game.stdscr.move(4, 0)
+                self.game.stdscr.addstr(f"Your new capacity is {self.game.capacity}.")
+                self.game.stdscr.refresh()
+                self.game.stdscr.timeout(M_PAUSE)
+                self.game.stdscr.getch()
+                self.game.stdscr.timeout(-1)
+        self.game.stdscr.clear()
+        self.game.stdscr.refresh()
          

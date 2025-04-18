@@ -6,6 +6,38 @@ from python.fancy_numbers import fancy_numbers
 class Messages:
     def __init__(self, stdscr: curses.window):
         self.stdscr = stdscr
+        
+    def name_firm(self) -> str:
+        """Set the firm name. In debug mode, sets to 'debug'."""
+        if DEBUG:
+            self.firm = "debug"
+        else:
+            self.message_name_firm()
+
+            character = 0
+            firm = ""
+
+            while character < 22:
+                input_char = self.stdscr.getch()
+                if input_char == ord('\n'):
+                    return firm
+                elif ((input_char == 8 or input_char == 127) and character == 0):
+                    self.stdscr.refresh()
+                elif input_char == 8 or input_char == 127:
+                    self.stdscr.addch(8)
+                    self.stdscr.addch(' ')
+                    self.stdscr.addch(8)
+                    firm = firm[:-1]
+                    character -= 1
+                    self.stdscr.refresh()
+                elif input_char == 27:  # Escape key
+                    curses.flushinp()
+                    self.stdscr.refresh()
+                else:
+                    self.stdscr.addch(input_char)
+                    firm += chr(input_char)
+                    character += 1
+                    self.stdscr.refresh()
 
     def message_wu_li_deny(self) -> None:
         self.stdscr.addstr("Very well. Elder Brother Wu will not pay\n")
@@ -134,6 +166,10 @@ class Messages:
         self.stdscr.addstr("                >> or <<\n\n")
         self.stdscr.addstr("  2) With five guns and no cash\n")
         self.stdscr.addstr("                (But no debt!)\n")
+        self.stdscr.move(15, 0)
+        self.stdscr.clrtobot()
+        self.stdscr.addstr("          ?")
+        self.stdscr.refresh()
 
     def message_new_ship(self, damage: int, amount: int) -> None:
         self.stdscr.move(16, 0)
