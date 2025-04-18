@@ -1,16 +1,118 @@
 import curses
 
 from constants import *
-from python.fancy_numbers import fancy_numbers
+from fancy_numbers import fancy_numbers
 
 class Messages:
     def __init__(self, stdscr: curses.window):
         self.stdscr = stdscr
         
+    def port_stats(self, status: int,
+                   firm: str, hkw_: list[int], hold: int, hold_: list[int],
+                   cash: int, bank: int, guns: int, debt: int, month: int, year: int, port: str) -> None:
+        """Display port statistics screen."""        
+        # Clear screen and prepare display
+        self.stdscr.clear()
+        
+        # Center firm name
+        spacer = 12 - (len(firm) // 2)
+        self.stdscr.addstr(0, spacer, f"Firm: {firm}, Hong Kong")
+        
+        # Draw the main display boxes
+        self.stdscr.addstr(1, 0, " ______________________________________")
+        self.stdscr.addstr(2, 0, "|Hong Kong Warehouse                   |     Date")
+        self.stdscr.addstr(3, 0, "|   Opium           In Use:            |")
+        self.stdscr.addstr(4, 0, "|   Silk                               |")
+        self.stdscr.addstr(5, 0, "|   Arms            Vacant:            |   Location")
+        self.stdscr.addstr(6, 0, "|   General                            |")
+        self.stdscr.addstr(7, 0, "|______________________________________|")
+        self.stdscr.addstr(8, 0, "|Hold               Guns               |     Debt")
+        self.stdscr.addstr(9, 0, "|   Opium                              |")
+        self.stdscr.addstr(10, 0, "|   Silk                               |")
+        self.stdscr.addstr(11, 0, "|   Arms                               |  Ship Status")
+        self.stdscr.addstr(12, 0, "|   General                            |")
+        self.stdscr.addstr(13, 0, "|______________________________________|")
+        self.stdscr.addstr(14, 0, "Cash:               Bank:")
+        self.stdscr.addstr(15, 0, "________________________________________")
+
+        # Display warehouse contents
+        self.stdscr.addstr(3, 12, str(hkw_[0]))
+        self.stdscr.addstr(4, 12, str(hkw_[1]))
+        self.stdscr.addstr(5, 12, str(hkw_[2]))
+        self.stdscr.addstr(6, 12, str(hkw_[3]))
+
+        # Display hold status
+        self.stdscr.move(8, 6)
+        if hold >= 0:
+            self.stdscr.addstr(str(hold))
+        else:
+            self.stdscr.attron(curses.A_REVERSE)
+            self.stdscr.addstr("Overload")
+            self.stdscr.attroff(curses.A_REVERSE)
+
+        # Display current cargo
+        self.stdscr.addstr(9, 12, str(hold_[0]))
+        self.stdscr.addstr(10, 12, str(hold_[1]))
+        self.stdscr.addstr(11, 12, str(hold_[2]))
+        self.stdscr.addstr(12, 12, str(hold_[3]))
+
+        # Display cash
+        self.stdscr.move(14, 5)
+        self.stdscr.addstr(fancy_numbers(cash))
+
+        # Calculate and display warehouse usage
+        in_use = sum(hkw_)
+        self.stdscr.addstr(4, 21, str(in_use))
+        self.stdscr.addstr(6, 21, str(10000 - in_use))
+
+        # Display guns
+        self.stdscr.addstr(8, 25, str(guns))
+
+        # Display bank balance
+        self.stdscr.move(14, 25)
+        self.stdscr.addstr(fancy_numbers(bank))
+
+        # Display date
+        self.stdscr.move(3, 42)
+        self.stdscr.addstr("15 ")
+        self.stdscr.attron(curses.A_REVERSE)
+        self.stdscr.addstr(months[month - 1])
+        self.stdscr.attroff(curses.A_REVERSE)
+        self.stdscr.addstr(f" {year}")
+
+        # Display location
+        self.stdscr.move(6, 43)
+        spacer = (9 - len(port)) // 2
+        self.stdscr.addstr(" " * spacer)
+        self.stdscr.attron(curses.A_REVERSE)
+        self.stdscr.addstr(port)
+        self.stdscr.attroff(curses.A_REVERSE)
+
+        # Display debt
+        self.stdscr.move(9, 41)
+        debt_str = fancy_numbers(debt)
+        spacer = (12 - len(debt_str)) // 2
+        self.stdscr.addstr(" " * spacer)
+        self.stdscr.attron(curses.A_REVERSE)
+        self.stdscr.addstr(debt_str)
+        self.stdscr.attroff(curses.A_REVERSE)
+
+        # Display ship status
+        status_index = int(status / 20)
+        if status_index < 2:
+            self.stdscr.attron(curses.A_REVERSE)
+            self.stdscr.move(12, 51)
+            self.stdscr.addstr("  ")
+        self.stdscr.move(12, 42)
+        self.stdscr.addstr(f"{status_texts[status_index]}:{int(status)}")
+        self.stdscr.attroff(curses.A_REVERSE)
+
+        self.stdscr.refresh()
+        
     def name_firm(self) -> str:
         """Set the firm name. In debug mode, sets to 'debug'."""
         if DEBUG:
-            self.firm = "debug"
+            return "debug"
         else:
             self.message_name_firm()
 
@@ -82,6 +184,9 @@ class Messages:
         self.stdscr.addstr("Comprador's Report\n\n")
         self.stdscr.addstr("Do you have business with Elder Brother\n")
         self.stdscr.addstr("Wu, the moneylender? ")
+        self.stdscr.move(19, 21)
+        self.stdscr.clrtoeol()
+        self.stdscr.refresh()
 
     def message_wu_warning(self, braves: int) -> None:
         self.stdscr.move(16, 0)
@@ -426,7 +531,7 @@ class Messages:
         self.stdscr.addstr("Taipan, you don't have that much!\n")
         self.stdscr.refresh()
 
-    def message_comprador_report(self, item: str) -> None:
+    def message_to_hold(self, item: str) -> None:
         """Display comprador's report for transferring cargo"""
         self.stdscr.move(16, 0)
         self.stdscr.clrtobot()
@@ -552,6 +657,9 @@ class Messages:
     def message_wu_too_much(self) -> None:
         self.stdscr.addstr("\n\nHe won't loan you so much, Taipan!")
         self.stdscr.refresh()
+        self.stdscr.timeout(L_PAUSE)
+        self.stdscr.getch()
+        self.stdscr.timeout(-1)
 
     def message_price_change(self, item: str, price: int, is_drop: bool) -> None:
         self.stdscr.move(16, 0)
@@ -593,7 +701,7 @@ class Messages:
         self.stdscr.addstr("How much will you withdraw? ")
         self.stdscr.refresh()
 
-    def message_transfer_prompt(self, item: str) -> None:
+    def message_to_warehouse(self, item: str) -> None:
         self.stdscr.move(16, 0)
         self.stdscr.clrtobot()
         self.stdscr.addstr("Comprador's Report\n\n")
@@ -631,6 +739,8 @@ class Messages:
 
     def message_afford_amount(self, amount: int) -> None:
         """Display how much the player can afford"""
+        self.stdscr.move(21, 42)
+        self.stdscr.clrtobot()
         self.stdscr.attron(curses.A_REVERSE)
         self.stdscr.addstr(" You can ")
         self.stdscr.attroff(curses.A_REVERSE)
@@ -642,6 +752,9 @@ class Messages:
         self.stdscr.move(23, 42)
         self.stdscr.addstr("         ")
         self.stdscr.move(23, 42)
+        self.stdscr.move(23, 0)
+        self.stdscr.addstr("I buy, Taipan: ")
+        self.stdscr.refresh()
         
         # Add appropriate spacing based on number size
         if amount < 100:
@@ -724,3 +837,18 @@ class Messages:
         self.stdscr.clrtobot()
         self.stdscr.addstr("  Captain's Report\n\n")
         self.stdscr.refresh()
+
+    def message_wu_difference(self) -> None:
+        """Display message asking if Elder Brother Wu should make up the difference"""
+        self.stdscr.move(18, 0)
+        self.stdscr.clrtobot()
+        self.stdscr.addstr("Do you want Elder Brother Wu to make up\n")
+        self.stdscr.addstr("the difference for you? ")
+        self.stdscr.refresh()
+
+    def message_paid_in_full(self) -> None:
+        """Display message indicating debt has been paid in full"""
+        self.stdscr.addstr(f"Taipan, you owe only {fancy_numbers(self.debt)}.\n")
+        self.stdscr.addstr("Paid in full.\n")
+        self.stdscr.refresh()
+        self.stdscr.timeout(L_PAUSE)

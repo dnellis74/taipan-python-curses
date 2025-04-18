@@ -1,12 +1,9 @@
+
 import curses
 import random
 import time
-from constants import (
-    DEBUG, GENERIC, LI_YUEN, BATTLE_NOT_FINISHED, BATTLE_WON, BATTLE_INTERRUPTED,
-    BATTLE_FLED, BATTLE_LOST, ANIMATION_PAUSE, M_PAUSE, L_PAUSE, BASE_ENEMY_HEALTH,
-    BASE_ENEMY_DAMAGE
-)
-from python.keyboard import Keyboard
+from constants import *
+from keyboard import Keyboard
 
 class SeaBattle:
     def __init__(self, game):
@@ -169,7 +166,7 @@ class SeaBattle:
             # Display current seaworthiness
             self.game.stdscr.move(3, 0)
             self.game.stdscr.clrtoeol()
-            self.game.stdscr.addstr(f"Current seaworthiness: {self.game.status_texts[int(status // 20)]} ({status}%)")
+            self.game.stdscr.addstr(f"Current seaworthiness: {status_texts[int(status // 20)]} ({status}%)")
             self.game.stdscr.refresh()
 
             # Draw ships

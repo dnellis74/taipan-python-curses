@@ -73,4 +73,14 @@ POOR = 1
 FAIR = 2
 GOOD = 3
 PRIME = 4
-PERFECT = 5 
+PERFECT = 5
+
+status_texts = [
+    "Critical", "  Poor", "  Fair",
+    "  Good", " Prime", "Perfect"
+]
+
+months = [
+    "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+    "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+]

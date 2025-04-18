@@ -3,7 +3,7 @@ from typing import Optional
 import curses
 
 from constants import M_PAUSE, L_PAUSE
-from python.keyboard import Keyboard
+from keyboard import Keyboard
 
 class McHenry:
     def __init__(self, game):

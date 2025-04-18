@@ -12,7 +12,7 @@ from fancy_numbers import fancy_numbers
 from sea_battle import SeaBattle
 from constants import *
 from mchenry import McHenry
-from python.keyboard import Keyboard
+from keyboard import Keyboard
 from messages import Messages
 
 class TaipanGame:
@@ -25,18 +25,6 @@ class TaipanGame:
 
         # Item and location names
         self.items = ["Opium", "Silk", "Arms", "General Cargo"]
-        self.locations = [
-            "At sea", "Hong Kong", "Shanghai", "Nagasaki",
-            "Saigon", "Manila", "Singapore", "Batavia"
-        ]
-        self.months = [
-            "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
-        ]
-        self.status_texts = [
-            "Critical", "  Poor", "  Fair",
-            "  Good", " Prime", "Perfect"
-        ]
 
         # Financial state
         self.cash = STARTING_CASH
@@ -46,6 +34,11 @@ class TaipanGame:
         # Combat stats
         self.ec = BASE_ENEMY_HEALTH
         self.ed = BASE_ENEMY_DAMAGE
+        
+        self.locations = [
+            "At sea", "Hong Kong", "Shanghai", "Nagasaki",
+            "Saigon", "Manila", "Singapore", "Batavia"
+        ]
 
         # Prices and inventory
         self.price = [0] * 4  # Current prices
@@ -72,8 +65,6 @@ class TaipanGame:
         self.port = STARTING_PORT
         self.wu_warn = 0
         self.wu_bailout = 0
-
-        self.keyboard = None  # Will be initialized in init_curses()
 
     def init_curses(self):
         """Initialize curses and set up the screen"""
@@ -148,104 +139,9 @@ class TaipanGame:
         """Display port statistics screen."""
         # Calculate status percentage
         status = 100 - ((self.damage / self.capacity) * 100)
-        
-        # Clear screen and prepare display
-        self.stdscr.clear()
-        
-        # Center firm name
-        spacer = 12 - (len(self.firm) // 2)
-        self.stdscr.addstr(0, spacer, f"Firm: {self.firm}, Hong Kong")
-        
-        # Draw the main display boxes
-        self.stdscr.addstr(1, 0, " ______________________________________")
-        self.stdscr.addstr(2, 0, "|Hong Kong Warehouse                   |     Date")
-        self.stdscr.addstr(3, 0, "|   Opium           In Use:            |")
-        self.stdscr.addstr(4, 0, "|   Silk                               |")
-        self.stdscr.addstr(5, 0, "|   Arms            Vacant:            |   Location")
-        self.stdscr.addstr(6, 0, "|   General                            |")
-        self.stdscr.addstr(7, 0, "|______________________________________|")
-        self.stdscr.addstr(8, 0, "|Hold               Guns               |     Debt")
-        self.stdscr.addstr(9, 0, "|   Opium                              |")
-        self.stdscr.addstr(10, 0, "|   Silk                               |")
-        self.stdscr.addstr(11, 0, "|   Arms                               |  Ship Status")
-        self.stdscr.addstr(12, 0, "|   General                            |")
-        self.stdscr.addstr(13, 0, "|______________________________________|")
-        self.stdscr.addstr(14, 0, "Cash:               Bank:")
-        self.stdscr.addstr(15, 0, "________________________________________")
-
-        # Display warehouse contents
-        self.stdscr.addstr(3, 12, str(self.hkw_[0]))
-        self.stdscr.addstr(4, 12, str(self.hkw_[1]))
-        self.stdscr.addstr(5, 12, str(self.hkw_[2]))
-        self.stdscr.addstr(6, 12, str(self.hkw_[3]))
-
-        # Display hold status
-        self.stdscr.move(8, 6)
-        if self.hold >= 0:
-            self.stdscr.addstr(str(self.hold))
-        else:
-            self.stdscr.attron(curses.A_REVERSE)
-            self.stdscr.addstr("Overload")
-            self.stdscr.attroff(curses.A_REVERSE)
-
-        # Display current cargo
-        self.stdscr.addstr(9, 12, str(self.hold_[0]))
-        self.stdscr.addstr(10, 12, str(self.hold_[1]))
-        self.stdscr.addstr(11, 12, str(self.hold_[2]))
-        self.stdscr.addstr(12, 12, str(self.hold_[3]))
-
-        # Display cash
-        self.stdscr.move(14, 5)
-        self.stdscr.addstr(fancy_numbers(self.cash))
-
-        # Calculate and display warehouse usage
-        in_use = sum(self.hkw_)
-        self.stdscr.addstr(4, 21, str(in_use))
-        self.stdscr.addstr(6, 21, str(10000 - in_use))
-
-        # Display guns
-        self.stdscr.addstr(8, 25, str(self.guns))
-
-        # Display bank balance
-        self.stdscr.move(14, 25)
-        self.stdscr.addstr(fancy_numbers(self.bank))
-
-        # Display date
-        self.stdscr.move(3, 42)
-        self.stdscr.addstr("15 ")
-        self.stdscr.attron(curses.A_REVERSE)
-        self.stdscr.addstr(self.months[self.month - 1])
-        self.stdscr.attroff(curses.A_REVERSE)
-        self.stdscr.addstr(f" {self.year}")
-
-        # Display location
-        self.stdscr.move(6, 43)
-        spacer = (9 - len(self.locations[self.port])) // 2
-        self.stdscr.addstr(" " * spacer)
-        self.stdscr.attron(curses.A_REVERSE)
-        self.stdscr.addstr(self.locations[self.port])
-        self.stdscr.attroff(curses.A_REVERSE)
-
-        # Display debt
-        self.stdscr.move(9, 41)
-        debt_str = fancy_numbers(self.debt)
-        spacer = (12 - len(debt_str)) // 2
-        self.stdscr.addstr(" " * spacer)
-        self.stdscr.attron(curses.A_REVERSE)
-        self.stdscr.addstr(debt_str)
-        self.stdscr.attroff(curses.A_REVERSE)
-
-        # Display ship status
-        status_index = int(status / 20)
-        if status_index < 2:
-            self.stdscr.attron(curses.A_REVERSE)
-            self.stdscr.move(12, 51)
-            self.stdscr.addstr("  ")
-        self.stdscr.move(12, 42)
-        self.stdscr.addstr(f"{self.status_texts[status_index]}:{int(status)}")
-        self.stdscr.attroff(curses.A_REVERSE)
-
-        self.stdscr.refresh()
+        self.screen.port_stats(status, self.firm, self.hkw_, self.hold, self.hold_,
+                               self.cash, self.bank, self.guns, self.debt,
+                               self.month, self.year, self.locations[self.port])
 
     def port_choices(self) -> int:
         """Display port menu choices and get user selection"""
@@ -319,48 +215,11 @@ class TaipanGame:
             self.guns += 1
         self.port_stats()
 
-    def li_yuen_extortion(self) -> None:
-        """Handle Li Yuen's extortion attempt"""
-        time = ((self.year - 1860) * 12) + self.month
-        i = 1.8
-        j = 0
-        amount = 0
-        if time > 12:
-            j = random.randint(0, 1000 * time) + (1000 * time)
-            i = 1
-        amount = ((self.cash / i) * random.random()) + j
-        self.screen.message_li_donation(amount)
-
-        if self.keyboard.choice_yes_no():
-            if amount <= self.cash:
-                self.cash -= amount
-                self.li = 1
-            else:
-                self.screen.message_not_enough()
-                self.stdscr.move(18, 0)
-                self.stdscr.clrtobot()
-                self.stdscr.addstr("Do you want Elder Brother Wu to make up\n")
-                self.stdscr.addstr("the difference for you? ")
-
-                if self.keyboard.choice_yes_no():
-                    amount -= self.cash
-                    self.debt += amount
-                    self.cash = 0
-                    self.li = 1
-                    self.screen.message_wu_li_accept()
-                else:
-                    self.cash = 0
-                    self.screen.message_wu_li_deny()
-        self.port_stats()
-
     def elder_brother_wu(self) -> None:
         """Handle Elder Brother Wu's interactions"""
         choice = 0
         wu = 0
         self.screen.message_wu_business()
-        self.stdscr.move(19, 21)
-        self.stdscr.clrtoeol()
-        self.stdscr.refresh()
         if self.keyboard.choice_yes_no():
             # You're out of cash, bank, guns, and hold.   Li Yeun bails you out.
             if (self.cash == 0 and self.bank == 0 and self.guns == 0 and
@@ -394,10 +253,7 @@ class TaipanGame:
                 wu = min(self.cash, self.debt)
             if wu <= self.cash:
                 if wu > self.debt:
-                    self.stdscr.addstr(f"Taipan, you owe only {fancy_numbers(self.debt)}.\n")
-                    self.stdscr.addstr("Paid in full.\n")
-                    self.stdscr.refresh()
-                    self.stdscr.timeout(L_PAUSE)
+                    self.screen.message_paid_in_full()
                     wu = self.debt
                 self.cash -= wu
                 if wu > self.debt and self.debt > 0:
@@ -419,10 +275,6 @@ class TaipanGame:
                 self.debt += wu
             else:
                 self.screen.message_wu_too_much()
-                self.stdscr.refresh()
-                self.stdscr.timeout(L_PAUSE)
-                self.stdscr.getch()
-                self.stdscr.timeout(-1)
 
         self.port_stats()
 
@@ -431,6 +283,36 @@ class TaipanGame:
             self.cash = 0
             self.port_stats()
             self.screen.message_mugged(num)
+
+    def li_yuen_extortion(self) -> None:
+        """Handle Li Yuen's extortion attempt"""
+        time = ((self.year - 1860) * 12) + self.month
+        i = 1.8
+        j = 0
+        amount = 0
+        if time > 12:
+            j = random.randint(0, 1000 * time) + (1000 * time)
+            i = 1
+        amount = ((self.cash / i) * random.random()) + j
+        self.screen.message_li_donation(amount)
+
+        if self.keyboard.choice_yes_no():
+            if amount <= self.cash:
+                self.cash -= amount
+                self.li = 1
+            else:
+                self.screen.message_not_enough()
+
+                if self.keyboard.choice_yes_no():
+                    amount -= self.cash
+                    self.debt += amount
+                    self.cash = 0
+                    self.li = 1
+                    self.screen.message_wu_li_accept()
+                else:
+                    self.cash = 0
+                    self.screen.message_wu_li_deny()
+        self.port_stats()
 
     def good_prices(self) -> None:
         """Handle random price changes for items"""
@@ -446,19 +328,13 @@ class TaipanGame:
 
     def buy(self) -> None:
         """Handle buying merchandise"""
-        self.stdscr.clear()
-        self.stdscr.move(0, 0)
-        self.stdscr.addstr("What do you wish to buy, Taipan?")
-        self.stdscr.move(1, 0)
-        self.stdscr.addstr("(O)pium, (S)ilk, (A)rms, (G)eneral")
-        self.stdscr.refresh()
+        self.screen.message_buy_prompt()
         choice_char = self.keyboard.get_one()
         choice = 0
         amount = 0
 
         # Get item choice
         while True:
-            self.screen.message_buy_prompt()
             choice_char = self.keyboard.get_one()
             if choice_char in [ord('O'), ord('o')]:
                 choice = 0
@@ -475,17 +351,9 @@ class TaipanGame:
 
         # Get amount to buy
         while True:
-            self.stdscr.move(21, 42)
-            self.stdscr.clrtobot()
-
             # Calculate how much player can afford
             afford = self.cash // self.price[choice]
             self.screen.message_afford_amount(afford)
-
-            self.stdscr.move(23, 0)
-            self.stdscr.addstr("I buy, Taipan: ")
-            self.stdscr.refresh()
-
             amount = self.keyboard.get_num(9)
             if amount == -1:
                 amount = self.cash // self.price[choice]
@@ -500,12 +368,7 @@ class TaipanGame:
 
     def sell(self) -> None:
         """Handle selling merchandise"""
-        self.stdscr.clear()
-        self.stdscr.move(0, 0)
-        self.stdscr.addstr("What do you wish to sell, Taipan?")
-        self.stdscr.move(1, 0)
-        self.stdscr.addstr("(O)pium, (S)ilk, (A)rms, (G)eneral")
-        self.stdscr.refresh()
+        self.screen.message_sell_prompt()
         choice_char = self.keyboard.get_one()
         choice = 0
         if choice_char in [ord('O'), ord('o')]:
@@ -581,7 +444,7 @@ class TaipanGame:
         for i in range(4):
             if self.hold_[i] > 0:
                 while True:
-                    self.screen.message_transfer_prompt(self.items[i])
+                    self.screen.message_to_warehouse(self.items[i])
                     amount = self.keyboard.get_num(9)
                     if amount == -1:
                         amount = self.hold_[i]
@@ -601,13 +464,7 @@ class TaipanGame:
         for i in range(4):
             if self.hkw_[i] > 0:
                 while True:
-                    self.stdscr.move(16, 0)
-                    self.stdscr.clrtobot()
-                    self.stdscr.addstr("Comprador's Report\n\n")
-                    self.stdscr.addstr(f"How much {self.items[i]} shall I move\n")
-                    self.stdscr.addstr("to the hold, Taipan? ")
-                    self.stdscr.refresh()
-
+                    self.screen.message_to_hold(self.items[i])
                     amount = self.keyboard.get_num(9)
                     if amount == -1:
                         amount = self.hkw_[i]
@@ -762,7 +619,7 @@ class TaipanGame:
             self.stdscr.clear()
             self.stdscr.refresh()
             curses.nocbreak()
-            curses.endwin()
+            curses.endwin() 
             exit(0)
 
     def main(self) -> None:
@@ -918,7 +775,7 @@ class TaipanGame:
         if self.hold == self.capacity:
             self.screen.message_hold_full()
             return
-        self.screen.message_comprador_report(item)
+        self.screen.message_to_hold(item)
         amount = self.keyboard.get_num(4)
         if amount == -1:
             return
@@ -940,7 +797,7 @@ class TaipanGame:
         if self.hkw_[self.items.index(item)] == 10000:
             self.screen.message_warehouse_full()
             return
-        self.screen.message_comprador_report(item)
+        self.screen.message_to_hold(item)
         amount = self.keyboard.get_num(4)
         if amount == -1:
             return
