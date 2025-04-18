@@ -1,6 +1,7 @@
 import curses
 
 def choice_yes_no(stdscr: curses.window) -> bool:
+    choice = 0
     while choice not in [ord('Y'), ord('y'), ord('N'), ord('n')]:
         choice = get_one(stdscr)
     if choice in [ord('Y'), ord('y')]:

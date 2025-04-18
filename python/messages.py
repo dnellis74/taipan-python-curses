@@ -1,6 +1,6 @@
 import curses
 
-from python.constants import L_PAUSE, M_PAUSE
+from constants import *
 from shared import fancy_numbers
 
 def message_wu_li_deny(stdscr: curses.window) -> None:
@@ -308,3 +308,66 @@ def message_arriving(stdscr: curses.window, location: str) -> None:
     stdscr.timeout(M_PAUSE)
     stdscr.getch()
     stdscr.timeout(-1)
+
+def message_final_stats(stdscr, cash: int, capacity: int, guns: int, years: int, month: int, time: int) -> None:
+    """Display final game statistics and rating"""
+    stdscr.clear()
+    stdscr.addstr("Your final status:\n\n")
+    stdscr.addstr(f"Net cash:  {fancy_numbers(cash)}\n\n")
+    stdscr.addstr(f"Ship size: {capacity} units with {guns} guns\n\n")
+    stdscr.addstr(f"You traded for {years} year")
+    if years != 1:
+        stdscr.addstr("s")
+    stdscr.addstr(f" and {month} month")
+    if month > 1:
+        stdscr.addstr("s")
+    stdscr.addstr("\n\n")
+    cash = cash / 100 / time
+    stdscr.attron(curses.A_REVERSE)
+    stdscr.addstr(f"Your score is {int(cash)}.\n")
+    stdscr.attroff(curses.A_REVERSE)
+    stdscr.addstr("\n")
+    if (cash < 100) and (cash >= 0):
+        stdscr.addstr("Have you considered a land based job?\n\n\n")
+    elif cash < 0:
+        stdscr.addstr("The crew has requested that you stay on\n")
+        stdscr.addstr("shore for their safety!!\n\n")
+    else:
+        stdscr.addstr("\n\n\n")
+    stdscr.addstr("Your Rating:\n")
+    stdscr.addstr(" _______________________________\n")
+    stdscr.addstr("|")
+    if cash > 49999:
+        stdscr.attron(curses.A_REVERSE)
+    stdscr.addstr("Ma Tsu")
+    stdscr.attroff(curses.A_REVERSE)
+    stdscr.addstr("         50,000 and over |\n")
+    stdscr.addstr("|")
+    if (cash < 50000) and (cash > 7999):
+        stdscr.attron(curses.A_REVERSE)
+    stdscr.addstr("Master Taipan")
+    stdscr.attroff(curses.A_REVERSE)
+    stdscr.addstr("   8,000 to 49,999|\n")
+    stdscr.addstr("|")
+    if (cash < 8000) and (cash > 999):
+        stdscr.attron(curses.A_REVERSE)
+    stdscr.addstr("Taipan")
+    stdscr.attroff(curses.A_REVERSE)
+    stdscr.addstr("          1,000 to  7,999|\n")
+    stdscr.addstr("|")
+    if (cash < 1000) and (cash > 499):
+        stdscr.attron(curses.A_REVERSE)
+    stdscr.addstr("Compradore")
+    stdscr.attroff(curses.A_REVERSE)
+    stdscr.addstr("        500 to    999|\n")
+    stdscr.addstr("|")
+    if cash < 500:
+        stdscr.attron(curses.A_REVERSE)
+    stdscr.addstr("Galley Hand")
+    stdscr.attroff(curses.A_REVERSE)
+    stdscr.addstr("       less than 500|\n")
+    stdscr.addstr("|_______________________________|\n\n")
+    stdscr.move(22, 0)
+    stdscr.clrtobot()
+    stdscr.addstr("Play again? ")
+    stdscr.refresh()

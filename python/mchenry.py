@@ -2,7 +2,7 @@ import random
 from typing import Optional
 
 from constants import M_PAUSE, L_PAUSE
-from shared import get_one, get_num
+from shared import get_one, get_num, choice_yes_no
 
 class McHenry:
     def __init__(self, game):
@@ -10,8 +10,6 @@ class McHenry:
 
     def offer_repairs(self) -> None:
         """Handle McHenry's ship repair offer"""
-        choice = 0
-
         self.game.stdscr.move(16, 0)
         self.game.stdscr.clrtobot()
         self.game.stdscr.addstr("Comprador's Report\n\n")
@@ -21,10 +19,7 @@ class McHenry:
         self.game.stdscr.addstr("Will ye be wanting repairs? ")
         self.game.stdscr.refresh()
 
-        while choice not in [ord('Y'), ord('y'), ord('N'), ord('n')]:
-            choice = get_one(self.game.stdscr)
-
-        if choice in [ord('Y'), ord('y')]:
+        if choice_yes_no(self.game.stdscr):
             self._handle_repairs()
 
     def _handle_repairs(self) -> None:
@@ -80,11 +75,8 @@ class McHenry:
 
         self.game.stdscr.addstr("Do you want Elder Brother Wu to make up\n")
         self.game.stdscr.addstr("the difference for you? ")
-        choice = 0
-        while choice not in [ord('Y'), ord('y'), ord('N'), ord('n')]:
-            choice = get_one(self.game.stdscr)
-
-        if choice in [ord('Y'), ord('y')]:
+        
+        if choice_yes_no(self.game.stdscr):
             self.game.stdscr.move(18, 0)
             self.game.stdscr.clrtobot()
             self.game.stdscr.addstr("Elder Brother has given McHenry the\n")

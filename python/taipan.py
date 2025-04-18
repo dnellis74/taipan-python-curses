@@ -8,7 +8,6 @@ Based on Apple ][ program by Ronald J. Berg
 import curses
 import random
 import os
-from python.messages import message_wu_li_accept, message_mugged, message_wu_business, message_wu_warning
 from sea_battle import SeaBattle
 from constants import (
     DEBUG, GENERIC, LI_YUEN, BATTLE_NOT_FINISHED, BATTLE_WON, BATTLE_INTERRUPTED,
@@ -18,14 +17,7 @@ from constants import (
 )
 from mchenry import McHenry
 from shared import choice_yes_no, fancy_numbers, get_one, get_num
-from messages import (
-    message_li_yuen, message_opium_seized, message_robbed, message_splash, 
-    message_name_firm, message_cash_or_guns, message_new_ship, message_new_gun, 
-    message_retire, message_warehouse_robbery, message_wu_li_deny, message_wu_warning,
-    message_no_cargo, message_destinations, message_storm_sighted,
-    message_going_down, message_sinking, message_made_it,
-    message_li_donation, message_off_course, message_arriving
-)
+from messages import *
 
 class TaipanGame:
     def __init__(self):
@@ -452,126 +444,118 @@ class TaipanGame:
         choice = 0
         wu = 0
         message_wu_business(self.stdscr)
-        while True:
-            self.stdscr.move(19, 21)
-            self.stdscr.clrtoeol()
-            self.stdscr.refresh()
+        self.stdscr.move(19, 21)
+        self.stdscr.clrtoeol()
+        self.stdscr.refresh()
 
-            choice = get_one(self.stdscr)
-            if choice in [ord('N'), ord('n')]:
-                break
-            elif choice in [ord('Y'), ord('y')]:
-                if (self.cash == 0 and self.bank == 0 and self.guns == 0 and
-                    self.hold_[0] == 0 and self.hkw_[0] == 0 and
-                    self.hold_[1] == 0 and self.hkw_[1] == 0 and
-                    self.hold_[2] == 0 and self.hkw_[2] == 0 and
-                    self.hold_[3] == 0 and self.hkw_[3] == 0):
-                    
-                    i = random.randint(500, 1999)
-                    j = random.randint(0, 1999) * self.wu_bailout + 1500
-                    self.wu_bailout += 1
+        if choice_yes_no(self.stdscr):
+            # You're out of cash, bank, guns, and hold.   Li Yeun bails you out.
+            if (self.cash == 0 and self.bank == 0 and self.guns == 0 and
+                self.hold_[0] == 0 and self.hkw_[0] == 0 and
+                self.hold_[1] == 0 and self.hkw_[1] == 0 and
+                self.hold_[2] == 0 and self.hkw_[2] == 0 and
+                self.hold_[3] == 0 and self.hkw_[3] == 0):
+                
+                i = random.randint(500, 1999)
+                j = random.randint(0, 1999) * self.wu_bailout + 1500
+                self.wu_bailout += 1
 
-                    while True:
+                while True:
+                    self.stdscr.move(16, 0)
+                    self.stdscr.clrtobot()
+                    self.stdscr.addstr("Comprador's Report\n\n")
+                    self.stdscr.addstr("Elder Brother is aware of your plight,\n")
+                    self.stdscr.addstr("Taipan.  He is willing to loan you an\n")
+                    self.stdscr.addstr(f"additional {i} if you will pay back\n")
+                    self.stdscr.addstr(f"{j}. Are you willing, Taipan? ")
+                    self.stdscr.refresh()
+
+                    choice = get_one(self.stdscr)
+                    if choice in [ord('N'), ord('n')]:
                         self.stdscr.move(16, 0)
                         self.stdscr.clrtobot()
                         self.stdscr.addstr("Comprador's Report\n\n")
-                        self.stdscr.addstr("Elder Brother is aware of your plight,\n")
-                        self.stdscr.addstr("Taipan.  He is willing to loan you an\n")
-                        self.stdscr.addstr(f"additional {i} if you will pay back\n")
-                        self.stdscr.addstr(f"{j}. Are you willing, Taipan? ")
+                        self.stdscr.addstr("Very well, Taipan, the game is over!\n")
+
                         self.stdscr.refresh()
+                        self.stdscr.timeout(L_PAUSE)
+                        self.stdscr.getch()
+                        self.stdscr.timeout(-1)
 
-                        choice = get_one(self.stdscr)
-                        if choice in [ord('N'), ord('n')]:
-                            self.stdscr.move(16, 0)
-                            self.stdscr.clrtobot()
-                            self.stdscr.addstr("Comprador's Report\n\n")
-                            self.stdscr.addstr("Very well, Taipan, the game is over!\n")
+                        self.final_stats()
+                    elif choice in [ord('Y'), ord('y')]:
+                        self.cash += i
+                        self.debt += j
+                        self.port_stats()
 
-                            self.stdscr.refresh()
-                            self.stdscr.timeout(L_PAUSE)
-                            self.stdscr.getch()
-                            self.stdscr.timeout(-1)
-
-                            self.final_stats()
-                        elif choice in [ord('Y'), ord('y')]:
-                            self.cash += i
-                            self.debt += j
-                            self.port_stats()
-
-                            self.stdscr.move(16, 0)
-                            self.stdscr.clrtobot()
-                            self.stdscr.addstr("Comprador's Report\n\n")
-                            self.stdscr.addstr("Very well, Taipan.  Good joss!!\n")
-
-                            self.stdscr.refresh()
-                            self.stdscr.timeout(L_PAUSE)
-                            self.stdscr.getch()
-                            self.stdscr.timeout(-1)
-
-                            return
-
-                while True:
-                    self.stdscr.move(16, 0)
-                    self.stdscr.clrtobot()
-                    self.stdscr.addstr("Comprador's Report\n\n")
-                    self.stdscr.addstr("How much do you wish to repay\n")
-                    self.stdscr.addstr("him? ")
-                    self.stdscr.refresh()
-
-                    wu = get_num(self.stdscr, 9)
-                    if wu == -1:
-                        wu = min(self.cash, self.debt)
-                    if wu <= self.cash:
-                        if wu > self.debt:
-                            self.stdscr.addstr(f"Taipan, you owe only {fancy_numbers(self.debt)}.\n")
-                            self.stdscr.addstr("Paid in full.\n")
-                            self.stdscr.refresh()
-                            self.stdscr.timeout(L_PAUSE)
-                            wu = self.debt
-                        self.cash -= wu
-                        if wu > self.debt and self.debt > 0:
-                            self.debt -= (wu + 1)
-                        else:
-                            self.debt -= wu
-                        break
-                    else:
-                        self.stdscr.move(18, 0)
+                        self.stdscr.move(16, 0)
                         self.stdscr.clrtobot()
-                        self.stdscr.addstr(f"Taipan, you only have {fancy_numbers(self.cash)}\n")
-                        self.stdscr.addstr("in cash.\n")
+                        self.stdscr.addstr("Comprador's Report\n\n")
+                        self.stdscr.addstr("Very well, Taipan.  Good joss!!\n")
 
                         self.stdscr.refresh()
                         self.stdscr.timeout(L_PAUSE)
                         self.stdscr.getch()
                         self.stdscr.timeout(-1)
 
-                self.port_stats()
+                        return
 
-                while True:
-                    self.stdscr.move(16, 0)
-                    self.stdscr.clrtobot()
-                    self.stdscr.addstr("Comprador's Report\n\n")
-                    self.stdscr.addstr("How much do you wish to\n")
-                    self.stdscr.addstr("borrow? ")
+            self.stdscr.move(16, 0)
+            self.stdscr.clrtobot()
+            self.stdscr.addstr("Comprador's Report\n\n")
+            self.stdscr.addstr("How much do you wish to repay\n")
+            self.stdscr.addstr("him? ")
+            self.stdscr.refresh()
+
+            wu = get_num(self.stdscr, 9)
+            if wu == -1:
+                wu = min(self.cash, self.debt)
+            if wu <= self.cash:
+                if wu > self.debt:
+                    self.stdscr.addstr(f"Taipan, you owe only {fancy_numbers(self.debt)}.\n")
+                    self.stdscr.addstr("Paid in full.\n")
                     self.stdscr.refresh()
+                    self.stdscr.timeout(L_PAUSE)
+                    wu = self.debt
+                self.cash -= wu
+                if wu > self.debt and self.debt > 0:
+                    self.debt -= (wu + 1)
+                else:
+                    self.debt -= wu
+            else:
+                self.stdscr.move(18, 0)
+                self.stdscr.clrtobot()
+                self.stdscr.addstr(f"Taipan, you only have {fancy_numbers(self.cash)}\n")
+                self.stdscr.addstr("in cash.\n")
 
-                    wu = get_num(self.stdscr, 9)
-                    if wu == -1:
-                        wu = self.cash * 2
-                    if wu <= (self.cash * 2):
-                        self.cash += wu
-                        self.debt += wu
-                        break
-                    else:
-                        self.stdscr.addstr("\n\nHe won't loan you so much, Taipan!")
-                        self.stdscr.refresh()
-                        self.stdscr.timeout(L_PAUSE)
-                        self.stdscr.getch()
-                        self.stdscr.timeout(-1)
+                self.stdscr.refresh()
+                self.stdscr.timeout(L_PAUSE)
+                self.stdscr.getch()
+                self.stdscr.timeout(-1)
 
-                self.port_stats()
-                break
+            self.port_stats()
+
+            self.stdscr.move(16, 0)
+            self.stdscr.clrtobot()
+            self.stdscr.addstr("Comprador's Report\n\n")
+            self.stdscr.addstr("How much do you wish to\n")
+            self.stdscr.addstr("borrow? ")
+            self.stdscr.refresh()
+
+            wu = get_num(self.stdscr, 9)
+            if wu == -1:
+                wu = self.cash * 2
+            if wu <= (self.cash * 2):
+                self.cash += wu
+                self.debt += wu
+            else:
+                self.stdscr.addstr("\n\nHe won't loan you so much, Taipan!")
+                self.stdscr.refresh()
+                self.stdscr.timeout(L_PAUSE)
+                self.stdscr.getch()
+                self.stdscr.timeout(-1)
+
+        self.port_stats()
 
         if self.debt > 20000 and self.cash > 0 and random.randint(0, 4) == 0:
             num = random.randint(1, 3)
@@ -1047,70 +1031,8 @@ class TaipanGame:
         years = self.year - 1860
         time = ((self.year - 1860) * 12) + self.month
         choice = 0
-
-        self.stdscr.clear()
-        self.stdscr.addstr("Your final status:\n\n")
-        self.cash = self.cash + self.bank - self.debt
-        self.stdscr.addstr(f"Net cash:  {fancy_numbers(self.cash)}\n\n")
-        self.stdscr.addstr(f"Ship size: {self.capacity} units with {self.guns} guns\n\n")
-        self.stdscr.addstr(f"You traded for {years} year")
-        if years != 1:
-            self.stdscr.addstr("s")
-        self.stdscr.addstr(f" and {self.month} month")
-        if self.month > 1:
-            self.stdscr.addstr("s")
-        self.stdscr.addstr("\n\n")
-        self.cash = self.cash / 100 / time
-        self.stdscr.attron(curses.A_REVERSE)
-        self.stdscr.addstr(f"Your score is {int(self.cash)}.\n")
-        self.stdscr.attroff(curses.A_REVERSE)
-        self.stdscr.addstr("\n")
-        if (self.cash < 100) and (self.cash >= 0):
-            self.stdscr.addstr("Have you considered a land based job?\n\n\n")
-        elif self.cash < 0:
-            self.stdscr.addstr("The crew has requested that you stay on\n")
-            self.stdscr.addstr("shore for their safety!!\n\n")
-        else:
-            self.stdscr.addstr("\n\n\n")
-        self.stdscr.addstr("Your Rating:\n")
-        self.stdscr.addstr(" _______________________________\n")
-        self.stdscr.addstr("|")
-        if self.cash > 49999:
-            self.stdscr.attron(curses.A_REVERSE)
-        self.stdscr.addstr("Ma Tsu")
-        self.stdscr.attroff(curses.A_REVERSE)
-        self.stdscr.addstr("         50,000 and over |\n")
-        self.stdscr.addstr("|")
-        if (self.cash < L_PAUSE) and (self.cash > 7999):
-            self.stdscr.attron(curses.A_REVERSE)
-        self.stdscr.addstr("Master Taipan")
-        self.stdscr.attroff(curses.A_REVERSE)
-        self.stdscr.addstr("   8,000 to 49,999|\n")
-        self.stdscr.addstr("|")
-        if (self.cash < 8000) and (self.cash > 999):
-            self.stdscr.attron(curses.A_REVERSE)
-        self.stdscr.addstr("Taipan")
-        self.stdscr.attroff(curses.A_REVERSE)
-        self.stdscr.addstr("          1,000 to  7,999|\n")
-        self.stdscr.addstr("|")
-        if (self.cash < 1000) and (self.cash > 499):
-            self.stdscr.attron(curses.A_REVERSE)
-        self.stdscr.addstr("Compradore")
-        self.stdscr.attroff(curses.A_REVERSE)
-        self.stdscr.addstr("        500 to    999|\n")
-        self.stdscr.addstr("|")
-        if self.cash < 500:
-            self.stdscr.attron(curses.A_REVERSE)
-        self.stdscr.addstr("Galley Hand")
-        self.stdscr.attroff(curses.A_REVERSE)
-        self.stdscr.addstr("       less than 500|\n")
-        self.stdscr.addstr("|_______________________________|\n\n")
-
+        message_final_stats(self.stdscr, self.cash + self.bank - self.debt, self.capacity, self.guns, years, self.month, time)
         while choice not in [ord('Y'), ord('y'), ord('N'), ord('n')]:
-            self.stdscr.move(22, 0)
-            self.stdscr.clrtobot()
-            self.stdscr.addstr("Play again? ")
-            self.stdscr.refresh()
             choice = get_one(self.stdscr)
 
         if choice in [ord('Y'), ord('y')]:
@@ -1129,12 +1051,12 @@ class TaipanGame:
             self.cash_or_guns()
             self.set_prices()
             return
-
-        self.stdscr.clear()
-        self.stdscr.refresh()
-        curses.nocbreak()
-        curses.endwin()
-        exit(0)
+        else:
+            self.stdscr.clear()
+            self.stdscr.refresh()
+            curses.nocbreak()
+            curses.endwin()
+            exit(0)
 
     def main(self) -> None:
         """Main game loop"""
@@ -1227,7 +1149,6 @@ class TaipanGame:
                         break
                     else:
                         self.overload()
-
         finally:
             self.cleanup_curses()
 
@@ -1274,4 +1195,4 @@ class TaipanGame:
 
 if __name__ == "__main__":
     game = TaipanGame()
-    game.main() 
+    game.main()
