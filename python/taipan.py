@@ -13,7 +13,9 @@ from constants import (
     DEBUG, GENERIC, LI_YUEN, BATTLE_NOT_FINISHED, BATTLE_WON, BATTLE_INTERRUPTED,
     BATTLE_FLED, BATTLE_LOST, ANIMATION_PAUSE, M_PAUSE, L_PAUSE, STARTING_YEAR, STARTING_MONTH, STARTING_PORT, STARTING_CAPACITY,
     STARTING_HOLD, STARTING_GUNS, STARTING_DAMAGE, STARTING_CASH, STARTING_BANK,
-    STARTING_DEBT, STARTING_BOOTY, BASE_ENEMY_HEALTH, BASE_ENEMY_DAMAGE
+    STARTING_DEBT, STARTING_BOOTY, BASE_ENEMY_HEALTH, BASE_ENEMY_DAMAGE, MAX_WAREHOUSE_CAPACITY, OPIUM, SILK, ARMS,
+    GENERAL, AT_SEA, HONG_KONG, SHANGHAI, NAGASAKI, SAIGON, MANILA, SINGAPORE,
+    BATAVIA, CRITICAL, POOR, FAIR, GOOD, PRIME, PERFECT
 )
 from mchenry import McHenry
 from shared import choice_yes_no, fancy_numbers, get_one, get_num
@@ -822,7 +824,7 @@ class TaipanGame:
     def quit(self) -> None:
         """Handle quitting current port and moving to new location"""
         choice = 0
-        result = self.BATTLE_NOT_FINISHED
+        result = BATTLE_NOT_FINISHED
 
         message_destinations(self.stdscr)
 
@@ -861,15 +863,15 @@ class TaipanGame:
             self.stdscr.getch()
             self.stdscr.timeout(-1)
 
-            result = self.sea_battle(self.GENERIC, num_ships)
+            result = self.sea_battle(GENERIC, num_ships)
             
-        if result == self.BATTLE_INTERRUPTED:
+        if result == BATTLE_INTERRUPTED:
             self.port_stats()
             message_pirates_help(self.stdscr, self.locations[0])
 
         # Handle Li Yuen's pirates encounter
-        if ((result == self.BATTLE_NOT_FINISHED and random.randint(0, 3 + (8 * self.li)) == 0) or 
-            result == self.BATTLE_INTERRUPTED):
+        if ((result == BATTLE_NOT_FINISHED and random.randint(0, 3 + (8 * self.li)) == 0) or 
+            result == BATTLE_INTERRUPTED):
             message_li_yuen_pirates(self.stdscr)
             self.stdscr.refresh()
 
@@ -883,10 +885,10 @@ class TaipanGame:
             else:
                 num_ships = random.randint(0, (self.capacity // 5) + self.guns) + 5
                 message_li_yuen_fleet(self.stdscr, num_ships)
-                result = self.sea_battle(self.LI_YUEN, num_ships)
+                result = self.sea_battle(LI_YUEN, num_ships)
 
         # Handle battle results
-        if result > self.BATTLE_NOT_FINISHED:
+        if result > BATTLE_NOT_FINISHED:
             self.port_stats()
             self.stdscr.move(6, 43)
             self.stdscr.addstr(" ")
@@ -898,14 +900,14 @@ class TaipanGame:
             self.stdscr.move(16, 0)
             self.stdscr.clrtobot()
             self.stdscr.addstr("  Captain's Report\n\n")
-            if result == self.BATTLE_WON:  # Victory!
+            if result == BATTLE_WON:  # Victory!
                 self.stdscr.addstr("We captured some booty.\n")
                 self.stdscr.addstr(f"It's worth {fancy_numbers(self.booty)}!")
                 self.cash += self.booty
-            elif result == self.BATTLE_FLED:  # Ran and got away.
+            elif result == BATTLE_FLED:  # Ran and got away.
                 self.stdscr.addstr("We made it!")
             else:  # result == BATTLE_LOST - Ship lost!
-                assert result != self.BATTLE_INTERRUPTED  # Shouldn't get interrupted when fighting Li Yuen
+                assert result != BATTLE_INTERRUPTED  # Shouldn't get interrupted when fighting Li Yuen
                 self.stdscr.addstr("The buggers got us, Taipan!!!\n")
                 self.stdscr.addstr("It's all over, now!!!")
                 self.stdscr.refresh()
@@ -1108,10 +1110,17 @@ class TaipanGame:
         self.port_stats()
         message_robbed(self.stdscr, robbed)
 
-    def sea_battle(self, id: int, num_ships: int) -> int:
-        """Handle sea battle with pirates"""
-        sea_battle = SeaBattle(self)
-        return sea_battle.battle(id, num_ships)
+    def sea_battle(self, battle_type: int, num_ships: int) -> int:
+        """Handle a sea battle with pirates"""
+        battle = SeaBattle(self)
+        result, booty = battle.battle(battle_type, num_ships)
+        if result == BATTLE_WON:  # Victory!
+            self.cash += booty
+        elif result == BATTLE_LOST:  # Ship lost!
+            self.game_over = True
+        message_battle_results(self.stdscr, result, booty)
+        get_one(self.stdscr)
+        return result
 
     def retire(self) -> None:
         """Handle retirement sequence"""
@@ -1162,17 +1171,6 @@ class TaipanGame:
         self.hold -= amount
         self.hkw_[self.items.index(item)] += amount
 
-    def sea_battle(self) -> None:
-        """Handle a sea battle"""
-        battle = SeaBattle(self)
-        result, booty = battle.battle()
-        if result == 1:  # Victory!
-            self.cash += booty
-        elif result == 2:  # Ship lost!
-            self.game_over = True
-        message_battle_results(self.stdscr, result, booty)
-        get_one(self.stdscr)
-
     def check_pirates(self) -> None:
         """Check for pirate encounters"""
         if random.random() < 0.1:  # 10% chance of pirates
@@ -1185,9 +1183,12 @@ class TaipanGame:
                     get_one(self.stdscr)
                     return
                 message_li_yuen_fleet(self.stdscr, num_ships)
+                result = self.sea_battle(LI_YUEN, num_ships)
             else:
                 message_hostile_ships(self.stdscr, num_ships)
-            self.sea_battle()
+                result = self.sea_battle(GENERIC, num_ships)
+            if result == BATTLE_LOST:
+                self.game_over = True
 
 if __name__ == "__main__":
     game = TaipanGame()

@@ -137,7 +137,7 @@ class SeaBattle:
         self.game.stdscr.addstr("+---------")
         self.game.stdscr.move(16, 0)
 
-    def battle(self, id: int, num_ships: int) -> int:
+    def battle(self, battle_type: int, num_ships: int) -> int:
         """Handle sea battle with pirates"""
         # Initialize battle variables
         self.orders = 0
@@ -372,8 +372,8 @@ class SeaBattle:
                 self.game.stdscr.timeout(-1)
 
                 # Check if some ships ran away
-                if random.randint(0, s0 - 1) > int(num_ships * 0.6 / id) and num_ships > 2:
-                    divisor = num_ships // 3 // id
+                if random.randint(0, s0 - 1) > int(num_ships * 0.6 / battle_type) and num_ships > 2:
+                    divisor = num_ships // 3 // battle_type
                     if divisor == 0:
                         divisor = 1
                     ran = random.randint(0, divisor - 1)
@@ -387,7 +387,7 @@ class SeaBattle:
                     self.game.stdscr.addstr(f"{ran} ran away, Taipan!")
 
                     # Check for Li Yuen's intervention when ships run away
-                    if id == GENERIC and random.randint(0, 19) == 0:
+                    if battle_type == GENERIC and random.randint(0, 19) == 0:
                         return BATTLE_INTERRUPTED
 
                     if num_ships <= 10:
@@ -659,10 +659,10 @@ class SeaBattle:
                     self.game.stdscr.timeout(-1)
 
                 # Apply damage regardless of debug mode
-                self.game.damage += int((self.game.ed * i * id) * random.random() + (i / 2))
+                self.game.damage += int((self.game.ed * i * battle_type) * random.random() + (i / 2))
 
                 # Check for Li Yuen's intervention
-                if id == GENERIC and random.randint(0, 19) == 0:
+                if battle_type == GENERIC and random.randint(0, 19) == 0:
                     return BATTLE_INTERRUPTED  # Battle interrupted by Li Yuen's pirates
 
         if num_ships == 0:
