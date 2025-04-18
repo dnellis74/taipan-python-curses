@@ -154,7 +154,7 @@ class SeaBattle:
                         time.sleep(ANIMATION_PAUSE)
 
                 # Show battle results
-                self.battle_screen.message_player_hits(sk > 0)
+                self.battle_screen.message_player_hits(sk)
                 input = self.battle_screen.pause_input()
                 self.orders = self.battle_screen.interpret_char(input, self.orders)
                 
