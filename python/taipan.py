@@ -89,16 +89,6 @@ class TaipanGame:
         self.wu_warn = 0
         self.wu_bailout = 0
 
-        # Battle constants
-        self.GENERIC = GENERIC
-        self.LI_YUEN = LI_YUEN
-
-        self.BATTLE_NOT_FINISHED = BATTLE_NOT_FINISHED
-        self.BATTLE_WON = BATTLE_WON
-        self.BATTLE_INTERRUPTED = BATTLE_INTERRUPTED
-        self.BATTLE_FLED = BATTLE_FLED
-        self.BATTLE_LOST = BATTLE_LOST
-
     def init_curses(self):
         """Initialize curses and set up the screen"""
         self.stdscr = curses.initscr()
@@ -423,16 +413,13 @@ class TaipanGame:
                 self.cash -= amount
                 self.li = 1
             else:
-                message_wu_li_deny(self.stdscr)
+                message_not_enough(self.stdscr)
                 self.stdscr.move(18, 0)
                 self.stdscr.clrtobot()
                 self.stdscr.addstr("Do you want Elder Brother Wu to make up\n")
                 self.stdscr.addstr("the difference for you? ")
-                choice = 0
-                while choice not in [ord('Y'), ord('y'), ord('N'), ord('n')]:
-                    choice = get_one(self.stdscr)
 
-                if choice in [ord('Y'), ord('y')]:
+                if choice_yes_no(self.stdscr):
                     amount -= self.cash
                     self.debt += amount
                     self.cash = 0
