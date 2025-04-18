@@ -1,5 +1,13 @@
 import curses
 
+def choice_yes_no(stdscr: curses.window) -> bool:
+    while choice not in [ord('Y'), ord('y'), ord('N'), ord('n')]:
+        choice = get_one(stdscr)
+    if choice in [ord('Y'), ord('y')]:
+        return True
+    else:
+        return False
+    
 def fancy_numbers(num: float) -> str:
     """
     Format numbers in a fancy way, converting large numbers to millions with decimal points.

@@ -2,6 +2,7 @@ import random
 from typing import Optional
 
 from constants import M_PAUSE, L_PAUSE
+from shared import get_one, get_num
 
 class McHenry:
     def __init__(self, game):
@@ -21,7 +22,7 @@ class McHenry:
         self.game.stdscr.refresh()
 
         while choice not in [ord('Y'), ord('y'), ord('N'), ord('n')]:
-            choice = self.game.get_one()
+            choice = get_one(self.game.stdscr)
 
         if choice in [ord('Y'), ord('y')]:
             self._handle_repairs()
@@ -45,7 +46,7 @@ class McHenry:
         self.game.stdscr.refresh()
 
         while True:
-            amount = self.game.get_num(9)
+            amount = get_num(self.game.stdscr, 9)
             # If player cancels, set amount to repair price
             if amount == -1:
                 amount = repair_price
@@ -81,7 +82,7 @@ class McHenry:
         self.game.stdscr.addstr("the difference for you? ")
         choice = 0
         while choice not in [ord('Y'), ord('y'), ord('N'), ord('n')]:
-            choice = self.game.get_one()
+            choice = get_one(self.game.stdscr)
 
         if choice in [ord('Y'), ord('y')]:
             self.game.stdscr.move(18, 0)
