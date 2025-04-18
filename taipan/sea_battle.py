@@ -287,6 +287,7 @@ class SeaBattle:
                 # Update more ships indicator
                 self.battle_screen.message_ship_ind(num_ships > self.num_on_screen)
                 self.battle_screen.message_battle_hit()
+                input = self.battle_screen.pause_input()
 
                 # Calculate damage
                 i = min(num_ships, 15)

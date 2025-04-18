@@ -173,9 +173,6 @@ class BattleScreen:
         self.game.screen.stdscr.clrtoeol()
         self.game.screen.stdscr.addstr("We've been hit, Taipan!!")
         self.game.screen.stdscr.refresh()
-        self.game.screen.stdscr.timeout(M_PAUSE)
-        self.game.screen.stdscr.getch()
-        self.game.screen.stdscr.timeout(-1)
 
     def message_battle_victory(self) -> None:
         """Display victory message"""
@@ -249,9 +246,6 @@ class BattleScreen:
         self.game.screen.stdscr.clrtoeol()
         self.game.screen.stdscr.addstr("The buggers hit a gun, Taipan!!")
         self.game.screen.stdscr.refresh()
-        self.game.screen.stdscr.timeout(M_PAUSE)
-        self.game.screen.stdscr.getch()
-        self.game.screen.stdscr.timeout(-1)
         
     def message_player_hits(self, sk: int) -> None:
         if sk > 0:
