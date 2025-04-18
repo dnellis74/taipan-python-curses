@@ -17,7 +17,18 @@ from constants import (
 )
 from mchenry import McHenry
 from shared import choice_yes_no, fancy_numbers, get_one, get_num
-from messages import *
+from messages import (
+    message_splash, message_name_firm, message_cash_or_guns, message_new_ship,
+    message_new_gun, message_retire, message_warehouse_full, message_not_enough,
+    message_comprador_report, message_hold_full, message_captains_report,
+    message_hostile_ships, message_li_yuen_pirates, message_good_joss,
+    message_li_yuen_fleet, message_battle_results, message_wu_li_deny,
+    message_wu_li_accept, message_mugged, message_wu_business, message_wu_warning,
+    message_li_yuen, message_robbed, message_warehouse_robbery, message_opium_seized,
+    message_no_cargo, message_destinations, message_storm_sighted, message_going_down,
+    message_sinking, message_made_it, message_li_donation, message_off_course,
+    message_arriving, message_final_stats, message_pirates_help
+)
 
 class TaipanGame:
     def __init__(self):
@@ -412,15 +423,9 @@ class TaipanGame:
                 self.cash -= amount
                 self.li = 1
             else:
+                message_wu_li_deny(self.stdscr)
                 self.stdscr.move(18, 0)
                 self.stdscr.clrtobot()
-                self.stdscr.addstr("Taipan, you do not have enough cash!!\n\n")
-                self.stdscr.refresh()
-
-                self.stdscr.timeout(M_PAUSE)
-                self.stdscr.getch()
-                self.stdscr.timeout(-1)
-
                 self.stdscr.addstr("Do you want Elder Brother Wu to make up\n")
                 self.stdscr.addstr("the difference for you? ")
                 choice = 0
@@ -432,7 +437,6 @@ class TaipanGame:
                     self.debt += amount
                     self.cash = 0
                     self.li = 1
-
                     message_wu_li_accept(self.stdscr)
                 else:
                     self.cash = 0
@@ -796,21 +800,9 @@ class TaipanGame:
                             in_use += amount
                             break
                         else:
-                            self.stdscr.move(18, 0)
-                            self.stdscr.clrtobot()
-                            self.stdscr.addstr("Taipan, the warehouse is full!\n")
-                            self.stdscr.refresh()
-                            self.stdscr.timeout(L_PAUSE)
-                            self.stdscr.getch()
-                            self.stdscr.timeout(-1)
+                            message_warehouse_full(self.stdscr)
                     else:
-                        self.stdscr.move(18, 0)
-                        self.stdscr.clrtobot()
-                        self.stdscr.addstr("Taipan, you don't have that much!\n")
-                        self.stdscr.refresh()
-                        self.stdscr.timeout(L_PAUSE)
-                        self.stdscr.getch()
-                        self.stdscr.timeout(-1)
+                        message_not_enough(self.stdscr)
 
         # Transfer cargo from warehouse to hold
         for i in range(4):
@@ -834,21 +826,9 @@ class TaipanGame:
                             in_use -= amount
                             break
                         else:
-                            self.stdscr.move(18, 0)
-                            self.stdscr.clrtobot()
-                            self.stdscr.addstr("Taipan, the hold is full!\n")
-                            self.stdscr.refresh()
-                            self.stdscr.timeout(L_PAUSE)
-                            self.stdscr.getch()
-                            self.stdscr.timeout(-1)
+                            message_hold_full(self.stdscr)
                     else:
-                        self.stdscr.move(18, 0)
-                        self.stdscr.clrtobot()
-                        self.stdscr.addstr("Taipan, you don't have that much!\n")
-                        self.stdscr.refresh()
-                        self.stdscr.timeout(L_PAUSE)
-                        self.stdscr.getch()
-                        self.stdscr.timeout(-1)
+                        message_not_enough(self.stdscr)
 
         self.port_stats()
 
@@ -881,16 +861,13 @@ class TaipanGame:
         self.stdscr.addstr(self.locations[0])
         self.stdscr.attroff(curses.A_REVERSE)
         self.stdscr.addstr("  ")
-
-        self.stdscr.move(16, 0)
-        self.stdscr.clrtobot()
-        self.stdscr.addstr("  Captain's Report\n\n")
+        message_captains_report(self.stdscr)
 
         if random.randint(0, self.bp - 1) == 0:
             num_ships = random.randint(1, (self.capacity // 10) + self.guns)
             if num_ships > 9999:
                 num_ships = 9999
-            self.stdscr.addstr(f"{num_ships} hostile ships approaching, Taipan!\n")
+            message_hostile_ships(self.stdscr, num_ships)
             self.stdscr.refresh()
 
             self.stdscr.timeout(M_PAUSE)
@@ -901,34 +878,12 @@ class TaipanGame:
             
         if result == self.BATTLE_INTERRUPTED:
             self.port_stats()
-            self.stdscr.move(6, 43)
-            self.stdscr.addstr(" ")
-            self.stdscr.attron(curses.A_REVERSE)
-            self.stdscr.addstr(self.locations[0])
-            self.stdscr.attroff(curses.A_REVERSE)
-            self.stdscr.addstr("  ")
-
-            self.stdscr.move(16, 0)
-            self.stdscr.clrtobot()
-            self.stdscr.addstr("  Captain's Report\n\n")
-            self.stdscr.addstr("Li Yuen's fleet drove them off!")
-
-            self.stdscr.move(16, 0)
-            self.stdscr.clrtobot()
-            self.stdscr.addstr("  Captain's Report\n\n")
-            self.stdscr.addstr("Li Yuen's fleet drove them off!")
-            self.stdscr.refresh()
-
-            self.stdscr.timeout(M_PAUSE)
-            self.stdscr.getch()
-            self.stdscr.timeout(-1)
+            message_pirates_help(self.stdscr, self.locations[0])
 
         # Handle Li Yuen's pirates encounter
         if ((result == self.BATTLE_NOT_FINISHED and random.randint(0, 3 + (8 * self.li)) == 0) or 
             result == self.BATTLE_INTERRUPTED):
-            self.stdscr.move(18, 0)
-            self.stdscr.clrtobot()
-            self.stdscr.addstr("Li Yuen's pirates, Taipan!!\n\n")
+            message_li_yuen_pirates(self.stdscr)
             self.stdscr.refresh()
 
             self.stdscr.timeout(M_PAUSE)
@@ -936,25 +891,11 @@ class TaipanGame:
             self.stdscr.timeout(-1)
 
             if self.li > 0:
-                self.stdscr.addstr("Good joss!! They let us be!!\n")
-                self.stdscr.refresh()
-
-                self.stdscr.timeout(M_PAUSE)
-                self.stdscr.getch()
-                self.stdscr.timeout(-1)
-
+                message_good_joss(self.stdscr)
                 return
             else:
                 num_ships = random.randint(0, (self.capacity // 5) + self.guns) + 5
-
-                self.stdscr.addstr(f"{num_ships} ships of Li Yuen's pirate\n")
-                self.stdscr.addstr("fleet, Taipan!!\n")
-                self.stdscr.refresh()
-
-                self.stdscr.timeout(M_PAUSE)
-                self.stdscr.getch()
-                self.stdscr.timeout(-1)
-
+                message_li_yuen_fleet(self.stdscr, num_ships)
                 result = self.sea_battle(self.LI_YUEN, num_ships)
 
         # Handle battle results
@@ -1010,7 +951,6 @@ class TaipanGame:
                 orig = self.port
                 while self.port == orig:
                     self.port = random.randint(1, 7)
-
                 message_off_course(self.stdscr, self.locations[self.port])
 
         self.month += 1
@@ -1032,10 +972,8 @@ class TaipanGame:
         time = ((self.year - 1860) * 12) + self.month
         choice = 0
         message_final_stats(self.stdscr, self.cash + self.bank - self.debt, self.capacity, self.guns, years, self.month, time)
-        while choice not in [ord('Y'), ord('y'), ord('N'), ord('n')]:
-            choice = get_one(self.stdscr)
 
-        if choice in [ord('Y'), ord('y')]:
+        if choice_yes_no(self.stdscr):
             self.bank = 0
             self.hkw_ = [0] * 4
             self.hold_ = [0] * 4
@@ -1181,7 +1119,7 @@ class TaipanGame:
         robbed = int((self.cash / 1.4) * random.random())
         self.cash -= robbed
         self.port_stats()
-        message_robbed(robbed)
+        message_robbed(self.stdscr, robbed)
 
     def sea_battle(self, id: int, num_ships: int) -> int:
         """Handle sea battle with pirates"""
@@ -1192,6 +1130,77 @@ class TaipanGame:
         """Handle retirement sequence"""
         message_retire(self.stdscr)
         self.final_stats()
+
+    def warehouse_to_hold(self, item: str) -> None:
+        """Move cargo from warehouse to ship's hold"""
+        if self.hkw_[self.items.index(item)] == 0:
+            message_not_enough(self.stdscr)
+            return
+        if self.hold == self.capacity:
+            message_hold_full(self.stdscr)
+            return
+        message_comprador_report(self.stdscr, item)
+        amount = get_num(self.stdscr, 4)
+        if amount == -1:
+            return
+        if amount > self.hkw_[self.items.index(item)]:
+            message_not_enough(self.stdscr)
+            return
+        if amount > self.capacity - self.hold:
+            message_hold_full(self.stdscr)
+            return
+        self.hkw_[self.items.index(item)] -= amount
+        self.hold += amount
+        self.hold_[self.items.index(item)] += amount
+
+    def hold_to_warehouse(self, item: str) -> None:
+        """Move cargo from ship's hold to warehouse"""
+        if self.hold_[self.items.index(item)] == 0:
+            message_not_enough(self.stdscr)
+            return
+        if self.hkw_[self.items.index(item)] == 10000:
+            message_warehouse_full(self.stdscr)
+            return
+        message_comprador_report(self.stdscr, item)
+        amount = get_num(self.stdscr, 4)
+        if amount == -1:
+            return
+        if amount > self.hold_[self.items.index(item)]:
+            message_not_enough(self.stdscr)
+            return
+        if amount > 10000 - self.hkw_[self.items.index(item)]:
+            message_warehouse_full(self.stdscr)
+            return
+        self.hold_[self.items.index(item)] -= amount
+        self.hold -= amount
+        self.hkw_[self.items.index(item)] += amount
+
+    def sea_battle(self) -> None:
+        """Handle a sea battle"""
+        battle = SeaBattle(self)
+        result, booty = battle.battle()
+        if result == 1:  # Victory!
+            self.cash += booty
+        elif result == 2:  # Ship lost!
+            self.game_over = True
+        message_battle_results(self.stdscr, result, booty)
+        get_one(self.stdscr)
+
+    def check_pirates(self) -> None:
+        """Check for pirate encounters"""
+        if random.random() < 0.1:  # 10% chance of pirates
+            message_captains_report(self.stdscr)
+            num_ships = random.randint(1, 3)
+            if random.random() < 0.3:  # 30% chance of Li Yuen's pirates
+                message_li_yuen_pirates(self.stdscr)
+                if random.random() < 0.5:  # 50% chance they let you be
+                    message_good_joss(self.stdscr)
+                    get_one(self.stdscr)
+                    return
+                message_li_yuen_fleet(self.stdscr, num_ships)
+            else:
+                message_hostile_ships(self.stdscr, num_ships)
+            self.sea_battle()
 
 if __name__ == "__main__":
     game = TaipanGame()

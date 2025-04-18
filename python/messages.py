@@ -371,3 +371,93 @@ def message_final_stats(stdscr, cash: int, capacity: int, guns: int, years: int,
     stdscr.clrtobot()
     stdscr.addstr("Play again? ")
     stdscr.refresh()
+
+def message_warehouse_full(stdscr) -> None:
+    """Display message when warehouse is full"""
+    stdscr.move(18, 0)
+    stdscr.clrtobot()
+    stdscr.addstr("Taipan, the warehouse is full!\n")
+    stdscr.refresh()
+
+def message_not_enough(stdscr) -> None:
+    """Display message when player doesn't have enough of something"""
+    stdscr.move(18, 0)
+    stdscr.clrtobot()
+    stdscr.addstr("Taipan, you don't have that much!\n")
+    stdscr.refresh()
+
+def message_comprador_report(stdscr, item: str) -> None:
+    """Display comprador's report for transferring cargo"""
+    stdscr.move(16, 0)
+    stdscr.clrtobot()
+    stdscr.addstr("Comprador's Report\n\n")
+    stdscr.addstr(f"How much {item} shall I move\n")
+    stdscr.addstr("to the hold, Taipan? ")
+    stdscr.refresh()
+
+def message_hold_full(stdscr) -> None:
+    """Display message when ship's hold is full"""
+    stdscr.move(18, 0)
+    stdscr.clrtobot()
+    stdscr.addstr("Taipan, the hold is full!\n")
+    stdscr.refresh()
+
+def message_captains_report(stdscr) -> None:
+    """Display captain's report header"""
+    stdscr.move(16, 0)
+    stdscr.clrtobot()
+    stdscr.addstr("  Captain's Report\n\n")
+    stdscr.refresh()
+
+def message_hostile_ships(stdscr, num_ships: int) -> None:
+    """Display message about approaching hostile ships"""
+    stdscr.addstr(f"{num_ships} hostile ships approaching, Taipan!\n")
+    stdscr.refresh()
+
+def message_li_yuen_pirates(stdscr) -> None:
+    """Display message about Li Yuen's pirates"""
+    stdscr.move(18, 0)
+    stdscr.clrtobot()
+    stdscr.addstr("Li Yuen's pirates, Taipan!!\n\n")
+    stdscr.refresh()
+
+def message_good_joss(stdscr) -> None:
+    """Display message when pirates let you be"""
+    stdscr.addstr("Good joss!! They let us be!!\n")
+    stdscr.refresh()
+
+def message_li_yuen_fleet(stdscr, num_ships: int) -> None:
+    """Display message about Li Yuen's pirate fleet"""
+    stdscr.addstr(f"{num_ships} ships of Li Yuen's pirate\n")
+    stdscr.addstr("fleet, Taipan!!\n")
+    stdscr.refresh()
+
+def message_battle_results(stdscr, result: int, booty: int) -> None:
+    """Display battle results"""
+    if result == 1:  # Victory!
+        stdscr.addstr("We captured some booty.\n")
+        stdscr.addstr(f"It's worth {fancy_numbers(booty)}!")
+    elif result == 3:  # Ran and got away.
+        stdscr.addstr("We made it!")
+    else:  # Ship lost!
+        stdscr.addstr("The buggers got us, Taipan!!!\n")
+        stdscr.addstr("It's all over, now!!!")
+    stdscr.refresh()
+    
+def message_pirates_help(stdscr: curses.window, location: str):
+    stdscr.move(6, 43)
+    stdscr.addstr(" ")
+    stdscr.attron(curses.A_REVERSE)
+    stdscr.addstr(location)
+    stdscr.attroff(curses.A_REVERSE)
+    stdscr.addstr("  ")
+
+    stdscr.move(16, 0)
+    stdscr.clrtobot()
+    stdscr.addstr("  Captain's Report\n\n")
+    stdscr.addstr("Li Yuen's fleet drove them off!")
+    stdscr.refresh()
+
+    stdscr.timeout(M_PAUSE)
+    stdscr.getch()
+    stdscr.timeout(-1)
