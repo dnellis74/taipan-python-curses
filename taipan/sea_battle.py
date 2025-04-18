@@ -1,8 +1,8 @@
-
 import curses
 import random
 import time
 from constants import *
+from sb_screen import BattleScreen
 
 class SeaBattle:
     def __init__(self, game):
@@ -12,83 +12,7 @@ class SeaBattle:
         self.orders = 0
         self.ok = 0
         self.ik = 1
-
-    def draw_lorcha(self, x: int, y: int) -> None:
-        """Draw a lorcha (ship) at given coordinates"""
-        self.game.screen.stdscr.move(y, x)
-        self.game.screen.stdscr.addstr("-|-_|_  ")
-        self.game.screen.stdscr.move(y + 1, x)
-        self.game.screen.stdscr.addstr("-|-_|_  ")
-        self.game.screen.stdscr.move(y + 2, x)
-        self.game.screen.stdscr.addstr("_|__|__/")
-        self.game.screen.stdscr.move(y + 3, x)
-        self.game.screen.stdscr.addstr("\\_____/ ")
-
-    def clear_lorcha(self, x: int, y: int) -> None:
-        """Clear a lorcha from given coordinates"""
-        self.game.screen.stdscr.move(y, x)
-        self.game.screen.stdscr.addstr("        ")
-        self.game.screen.stdscr.move(y + 1, x)
-        self.game.screen.stdscr.addstr("        ")
-        self.game.screen.stdscr.move(y + 2, x)
-        self.game.screen.stdscr.addstr("        ")
-        self.game.screen.stdscr.move(y + 3, x)
-        self.game.screen.stdscr.addstr("        ")
-
-    def draw_blast(self, x: int, y: int) -> None:
-        """Draw a blast effect at given coordinates"""
-        self.game.screen.stdscr.move(y, x)
-        self.game.screen.stdscr.addstr("********")
-        self.game.screen.stdscr.move(y + 1, x)
-        self.game.screen.stdscr.addstr("********")
-        self.game.screen.stdscr.move(y + 2, x)
-        self.game.screen.stdscr.addstr("********")
-        self.game.screen.stdscr.move(y + 3, x)
-        self.game.screen.stdscr.addstr("********")
-
-    def sink_lorcha(self, x: int, y: int) -> None:
-        """Animate a lorcha sinking at given coordinates"""
-        delay = random.randint(0, 19)
-
-        self.game.screen.stdscr.move(y, x)
-        self.game.screen.stdscr.addstr("        ")
-        self.game.screen.stdscr.move(y + 1, x)
-        self.game.screen.stdscr.addstr("-|-_|_  ")
-        self.game.screen.stdscr.move(y + 2, x)
-        self.game.screen.stdscr.addstr("-|-_|_  ")
-        self.game.screen.stdscr.move(y + 3, x)
-        self.game.screen.stdscr.addstr("_|__|__/")
-        self.game.screen.stdscr.refresh()
-        time.sleep(ANIMATION_PAUSE)
-        if delay == 0:
-            time.sleep(ANIMATION_PAUSE)
-
-        self.game.screen.stdscr.move(y + 1, x)
-        self.game.screen.stdscr.addstr("        ")
-        self.game.screen.stdscr.move(y + 2, x)
-        self.game.screen.stdscr.addstr("-|-_|_  ")
-        self.game.screen.stdscr.move(y + 3, x)
-        self.game.screen.stdscr.addstr("-|-_|_  ")
-        self.game.screen.stdscr.refresh()
-        time.sleep(ANIMATION_PAUSE)
-        if delay == 0:
-            time.sleep(ANIMATION_PAUSE)
-
-        self.game.screen.stdscr.move(y + 2, x)
-        self.game.screen.stdscr.addstr("        ")
-        self.game.screen.stdscr.move(y + 3, x)
-        self.game.screen.stdscr.addstr("-|-_|_  ")
-        self.game.screen.stdscr.refresh()
-        time.sleep(ANIMATION_PAUSE)
-        if delay == 0:
-            time.sleep(ANIMATION_PAUSE)
-
-        self.game.screen.stdscr.move(y + 3, x)
-        self.game.screen.stdscr.addstr("        ")
-        self.game.screen.stdscr.refresh()
-        time.sleep(ANIMATION_PAUSE)
-        if delay == 0:
-            time.sleep(ANIMATION_PAUSE)
+        self.battle_screen = BattleScreen(game)
 
     def fight_stats(self, ships: int, orders: int) -> None:
         """Display battle statistics during sea battle"""
@@ -162,10 +86,7 @@ class SeaBattle:
                 return BATTLE_LOST  # Ship lost!
 
             # Display current seaworthiness
-            self.game.screen.stdscr.move(3, 0)
-            self.game.screen.stdscr.clrtoeol()
-            self.game.screen.stdscr.addstr(f"Current seaworthiness: {status_texts[int(status // 20)]} ({status}%)")
-            self.game.screen.stdscr.refresh()
+            self.battle_screen.message_battle_status(status)
 
             # Draw ships
             x = 10
@@ -179,7 +100,7 @@ class SeaBattle:
                     if self.ships_on_screen[i] == 0:
                         time.sleep(0.1)  # Small delay for animation
                         self.ships_on_screen[i] = int(self.game.ec * random.random() + 20)
-                        self.draw_lorcha(x, y)
+                        self.battle_screen.draw_lorcha(x, y)
                         self.num_on_screen += 1
                         self.game.screen.stdscr.refresh()
 
@@ -193,13 +114,7 @@ class SeaBattle:
                 self.game.screen.stdscr.addstr(" ")
 
             # Get player orders
-            self.game.screen.stdscr.move(16, 0)
-            self.game.screen.stdscr.addstr("\n")
-            self.game.screen.stdscr.refresh()
-            # This pause is used to allow the player to read the message
-            self.game.screen.stdscr.timeout(3000)
-            input_char = self.game.screen.stdscr.getch()
-            self.game.screen.stdscr.timeout(-1)
+            input_char = self.battle_screen.message_battle_orders()
 
             # Process orders
             if input_char in [ord('F'), ord('f')]:
@@ -211,7 +126,7 @@ class SeaBattle:
 
             if self.orders == 0:
                 self.game.screen.stdscr.timeout(M_PAUSE)
-                input_char = self.game.screen.stdscr.getch()
+                input_char = self.battle_screen.message_battle_orders()
                 self.game.screen.stdscr.timeout(-1)
 
                 if input_char in [ord('F'), ord('f')]:
@@ -221,10 +136,7 @@ class SeaBattle:
                 elif input_char in [ord('T'), ord('t')]:
                     self.orders = 3
                 else:
-                    self.game.screen.stdscr.move(3, 0)
-                    self.game.screen.stdscr.clrtoeol()
-                    self.game.screen.stdscr.addstr("Taipan, what shall we do??    (f=Fight, r=Run, t=Throw cargo)")
-                    self.game.screen.stdscr.refresh()
+                    self.battle_screen.message_battle_no_guns()
                     self.game.screen.stdscr.timeout(-1)
                     while input_char not in [ord('F'), ord('f'), ord('R'), ord('r'), ord('T'), ord('t')]:
                         input_char = self.game.screen.stdscr.getch()
@@ -241,21 +153,7 @@ class SeaBattle:
             if self.orders == 1 and self.game.guns > 0:
                 self.ok = 3
                 self.ik = 1
-                self.game.screen.stdscr.move(3, 0)
-                self.game.screen.stdscr.clrtoeol()
-                self.game.screen.stdscr.addstr("Aye, we'll fight 'em, Taipan.")
-                self.game.screen.stdscr.refresh()
-                self.game.screen.stdscr.timeout(M_PAUSE)
-                self.game.screen.stdscr.getch()
-                self.game.screen.stdscr.timeout(-1)
-
-                self.game.screen.stdscr.move(3, 0)
-                self.game.screen.stdscr.clrtoeol()
-                self.game.screen.stdscr.addstr("We're firing on 'em, Taipan!")
-                self.game.screen.stdscr.timeout(1000)
-                self.game.screen.stdscr.getch()
-                self.game.screen.stdscr.timeout(-1)
-                self.game.screen.stdscr.refresh()
+                self.battle_screen.message_battle_fight()
 
                 sk = 0  # Ships sunk counter
                 for i in range(1, self.game.guns + 1):
@@ -272,7 +170,7 @@ class SeaBattle:
                                 if self.ships_on_screen[j] == 0:
                                     time.sleep(0.1)
                                     self.ships_on_screen[j] = int(self.game.ec * random.random() + 20)
-                                    self.draw_lorcha(x, y)
+                                    self.battle_screen.draw_lorcha(x, y)
                                     self.num_on_screen += 1
 
                             x += 10
@@ -298,31 +196,24 @@ class SeaBattle:
                     y = 6 if targeted < 5 else 12
 
                     # Show blast animation
-                    self.draw_blast(x, y)
+                    self.battle_screen.draw_blast(x, y)
                     self.game.screen.stdscr.refresh()
                     time.sleep(0.1)
 
-                    self.draw_lorcha(x, y)
+                    self.battle_screen.draw_lorcha(x, y)
                     self.game.screen.stdscr.refresh()
                     time.sleep(0.1)
 
-                    self.draw_blast(x, y)
+                    self.battle_screen.draw_blast(x, y)
                     self.game.screen.stdscr.refresh()
                     time.sleep(0.1)
 
-                    self.draw_lorcha(x, y)
+                    self.battle_screen.draw_lorcha(x, y)
                     self.game.screen.stdscr.refresh()
                     time.sleep(0.05)
 
                     # Show remaining shots
-                    self.game.screen.stdscr.move(3, 30)
-                    self.game.screen.stdscr.clrtoeol()
-                    if self.game.guns - i == 1:
-                        self.game.screen.stdscr.addstr("(1 shot remaining.)")
-                    else:
-                        self.game.screen.stdscr.addstr(f"({self.game.guns - i} shots remaining.)")
-                    self.game.screen.stdscr.refresh()
-                    time.sleep(0.1)
+                    self.battle_screen.message_battle_shots_remaining(self.game.guns - i)
 
                     # Apply damage with more sophisticated calculation
                     self.ships_on_screen[targeted] -= random.randint(10, 40)
@@ -336,7 +227,7 @@ class SeaBattle:
 
                         delay = random.randint(0, 19)
                         time.sleep(0.1)
-                        self.sink_lorcha(x, y)
+                        self.battle_screen.sink_lorcha(x, y)
                         if delay == 0:
                             time.sleep(ANIMATION_PAUSE)
 
@@ -353,16 +244,7 @@ class SeaBattle:
                         time.sleep(ANIMATION_PAUSE)
 
                 # Show battle results
-                self.game.screen.stdscr.move(3, 0)
-                self.game.screen.stdscr.clrtoeol()
-                if sk > 0:
-                    self.game.screen.stdscr.addstr(f"Sunk {sk} of the buggers, Taipan!")
-                else:
-                    self.game.screen.stdscr.addstr("Hit 'em, but didn't sink 'em, Taipan!")
-                self.game.screen.stdscr.refresh()
-                self.game.screen.stdscr.timeout(M_PAUSE)
-                self.game.screen.stdscr.getch()
-                self.game.screen.stdscr.timeout(-1)
+                self.battle_screen.message_battle_escape(sk > 0)
 
                 # Check if some ships ran away
                 if random.randint(0, s0 - 1) > int(num_ships * 0.6 / battle_type) and num_ships > 2:
@@ -375,9 +257,7 @@ class SeaBattle:
 
                     num_ships -= ran
                     self.fight_stats(num_ships, self.orders)
-                    self.game.screen.stdscr.move(3, 0)
-                    self.game.screen.stdscr.clrtoeol()
-                    self.game.screen.stdscr.addstr(f"{ran} ran away, Taipan!")
+                    self.battle_screen.message_battle_ships_escaped(ran)
 
                     # Check for Li Yuen's intervention when ships run away
                     if battle_type == GENERIC and random.randint(0, 19) == 0:
@@ -391,7 +271,7 @@ class SeaBattle:
 
                                 x = ((i + 1) * 10) if i < 5 else ((i - 4) * 10)
                                 y = 6 if i < 5 else 12
-                                self.clear_lorcha(x, y)
+                                self.battle_screen.clear_lorcha(x, y)
                                 self.game.screen.stdscr.refresh()
                                 time.sleep(0.1)
 
@@ -413,12 +293,7 @@ class SeaBattle:
                     elif input_char in [ord('T'), ord('t')]:
                         self.orders = 3
             elif self.orders == 1 and self.game.guns == 0:
-                self.game.screen.stdscr.move(3, 0)
-                self.game.screen.stdscr.clrtoeol()
-                self.game.screen.stdscr.addstr("We have no guns, Taipan!!")
-                self.game.screen.stdscr.refresh()
-                self.game.screen.stdscr.timeout(3000)
-                input_char = self.game.screen.stdscr.getch()
+                self.battle_screen.message_battle_no_guns()
                 self.game.screen.stdscr.timeout(-1)
             # Handle throwing cargo
             elif self.orders == 3:
@@ -426,22 +301,7 @@ class SeaBattle:
                 amount = 0
                 total = 0
 
-                self.game.screen.stdscr.move(18, 0)
-                self.game.screen.stdscr.clrtobot()
-                self.game.screen.stdscr.addstr("You have the following on board, Taipan:")
-                self.game.screen.stdscr.move(19, 4)
-                self.game.screen.stdscr.addstr(f"Opium: {self.game.hold_[0]}")
-                self.game.screen.stdscr.move(19, 24)
-                self.game.screen.stdscr.addstr(f"Silk: {self.game.hold_[1]}")
-                self.game.screen.stdscr.move(20, 5)
-                self.game.screen.stdscr.addstr(f"Arms: {self.game.hold_[2]}")
-                self.game.screen.stdscr.move(20, 21)
-                self.game.screen.stdscr.addstr(f"General: {self.game.hold_[3]}")
-
-                self.game.screen.stdscr.move(3, 0)
-                self.game.screen.stdscr.clrtoeol()
-                self.game.screen.stdscr.addstr("What shall I throw overboard, Taipan? ")
-                self.game.screen.stdscr.refresh()
+                self.battle_screen.message_battle_throw_cargo()
 
                 while choice not in [ord('O'), ord('o'), ord('S'), ord('s'), 
                                    ord('A'), ord('a'), ord('G'), ord('g'), ord('*')]:
@@ -508,13 +368,7 @@ class SeaBattle:
             # Handle running or throwing cargo
             if self.orders == 2 or self.orders == 3:
                 if self.orders == 2:
-                    self.game.screen.stdscr.move(3, 0)
-                    self.game.screen.stdscr.clrtoeol()
-                    self.game.screen.stdscr.addstr("Aye, we'll run, Taipan.")
-                    self.game.screen.stdscr.refresh()
-                    self.game.screen.stdscr.timeout(M_PAUSE)
-                    self.game.screen.stdscr.getch()
-                    self.game.screen.stdscr.timeout(-1)
+                    self.battle_screen.message_battle_run()
 
                 self.ok += self.ik
                 self.ik += 1
@@ -523,19 +377,13 @@ class SeaBattle:
 
                 if random.randint(0, self.ok - 1) > random.randint(0, num_ships - 1):
                     curses.flushinp()
-                    self.game.screen.stdscr.move(3, 0)
-                    self.game.screen.stdscr.clrtoeol()
-                    self.game.screen.stdscr.addstr("We got away from 'em, Taipan!")
-                    self.game.screen.stdscr.refresh()
+                    self.battle_screen.message_battle_escape(True)
                     self.game.screen.stdscr.timeout(M_PAUSE)
                     self.game.screen.stdscr.getch()
                     self.game.screen.stdscr.timeout(-1)
                     num_ships = 0
                 else:
-                    self.game.screen.stdscr.move(3, 0)
-                    self.game.screen.stdscr.clrtoeol()
-                    self.game.screen.stdscr.addstr("Couldn't lose 'em.")
-                    self.game.screen.stdscr.refresh()
+                    self.battle_screen.message_battle_escape(False)
                     self.game.screen.stdscr.timeout(M_PAUSE)
                     self.game.screen.stdscr.getch()
                     self.game.screen.stdscr.timeout(-1)
@@ -545,9 +393,7 @@ class SeaBattle:
 
                         num_ships -= lost
                         self.fight_stats(num_ships, self.orders)
-                        self.game.screen.stdscr.move(3, 0)
-                        self.game.screen.stdscr.clrtoeol()
-                        self.game.screen.stdscr.addstr(f"But we escaped from {lost} of 'em!")
+                        self.battle_screen.message_battle_ships_escaped(lost)
 
                         if num_ships <= 10:
                             for i in range(9, -1, -1):
@@ -557,7 +403,7 @@ class SeaBattle:
 
                                     x = ((i + 1) * 10) if i < 5 else ((i - 4) * 10)
                                     y = 6 if i < 5 else 12
-                                    self.clear_lorcha(x, y)
+                                    self.battle_screen.clear_lorcha(x, y)
                                     self.game.screen.stdscr.refresh()
                                     time.sleep(0.1)
 
@@ -581,13 +427,7 @@ class SeaBattle:
 
             # Handle enemy firing
             if num_ships > 0:
-                self.game.screen.stdscr.move(3, 0)
-                self.game.screen.stdscr.clrtoeol()
-                self.game.screen.stdscr.addstr("They're firing on us, Taipan!")
-                self.game.screen.stdscr.refresh()
-                self.game.screen.stdscr.timeout(M_PAUSE)
-                self.game.screen.stdscr.getch()
-                self.game.screen.stdscr.timeout(-1)
+                self.battle_screen.message_battle_enemy_firing()
                 curses.flushinp()
 
                 # Show blast animation
@@ -613,7 +453,7 @@ class SeaBattle:
                         y = 12
 
                     if self.ships_on_screen[i] > 0:
-                        self.draw_lorcha(x, y)
+                        self.battle_screen.draw_lorcha(x, y)
 
                     x += 10
 
@@ -624,13 +464,7 @@ class SeaBattle:
                 else:
                     self.game.screen.stdscr.addstr(" ")
 
-                self.game.screen.stdscr.move(3, 0)
-                self.game.screen.stdscr.clrtoeol()
-                self.game.screen.stdscr.addstr("We've been hit, Taipan!!")
-                self.game.screen.stdscr.refresh()
-                self.game.screen.stdscr.timeout(M_PAUSE)
-                self.game.screen.stdscr.getch()
-                self.game.screen.stdscr.timeout(-1)
+                self.battle_screen.message_battle_hit()
 
                 # Calculate damage
                 i = min(num_ships, 15)
@@ -641,15 +475,9 @@ class SeaBattle:
                     if not DEBUG:  # Only prevent gun loss in debug mode
                         self.game.guns -= 1
                         self.game.hold += 10
+                    self.battle_screen.message_battle_gun_hit(num_ships)
                     self.fight_stats(num_ships, self.orders)
-                    self.game.screen.stdscr.move(3, 0)
-                    self.game.screen.stdscr.clrtoeol()
-                    self.game.screen.stdscr.addstr("The buggers hit a gun, Taipan!!")
-                    self.fight_stats(num_ships, self.orders)
-                    self.game.screen.stdscr.refresh()
-                    self.game.screen.stdscr.timeout(M_PAUSE)
-                    self.game.screen.stdscr.getch()
-                    self.game.screen.stdscr.timeout(-1)
+
 
                 # Apply damage regardless of debug mode
                 self.game.damage += int((self.game.ed * i * battle_type) * random.random() + (i / 2))
@@ -660,16 +488,8 @@ class SeaBattle:
 
         if num_ships == 0:
             if self.orders == 1:
-                self.game.screen.stdscr.clear()
-                self.fight_stats(num_ships, self.orders)
-                self.game.screen.stdscr.move(3, 0)
-                self.game.screen.stdscr.clrtoeol()
-                self.game.screen.stdscr.addstr("We got 'em all, Taipan!")
-                self.game.screen.stdscr.refresh()
-                self.game.screen.stdscr.timeout(M_PAUSE)
-                self.game.screen.stdscr.getch()
-                self.game.screen.stdscr.timeout(-1)
-
+                self.battle_screen.message_battle_victory()
+                self.fight_stats(0, self.orders)
                 return BATTLE_WON  # Victory!
             else:
                 return BATTLE_FLED  # Ran and got away. 
