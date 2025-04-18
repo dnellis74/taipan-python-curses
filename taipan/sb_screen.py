@@ -125,14 +125,17 @@ class BattleScreen:
     def message_battle_orders(self) -> int:
         """Display battle orders prompt"""
         self.game.screen.stdscr.timeout(M_PAUSE)
-        self.game.screen.stdscr.move(16, 0)
-        self.game.screen.stdscr.addstr("\n")
-        self.game.screen.stdscr.refresh()
+        self.message_lf()
         # This pause is used to allow the player to read the message
         self.game.screen.stdscr.timeout(3000)
         input_char = self.game.screen.stdscr.getch()
         self.game.screen.stdscr.timeout(-1)
         return input_char
+
+    def message_lf(self):
+        self.game.screen.stdscr.move(16, 0)
+        self.game.screen.stdscr.addstr("\n")
+        self.game.screen.stdscr.refresh()
 
     def message_battle_fight(self) -> None:
         """Display fighting messages"""
@@ -172,6 +175,7 @@ class BattleScreen:
         self.game.screen.stdscr.timeout(M_PAUSE)
         self.game.screen.stdscr.getch()
         self.game.screen.stdscr.timeout(-1)
+        curses.flushinp()
 
     def message_battle_hit(self) -> None:
         """Display hit message"""
@@ -194,16 +198,13 @@ class BattleScreen:
         self.game.screen.stdscr.getch()
         self.game.screen.stdscr.timeout(-1)
 
-    def message_battle_no_guns(self) -> int:
+    def message_battle_no_guns(self) -> None:
         """Display no guns message"""
         self.game.screen.stdscr.move(3, 0)
         self.game.screen.stdscr.clrtoeol()
         self.game.screen.stdscr.addstr("We have no guns, Taipan!!")
         self.game.screen.stdscr.refresh()
-        self.game.screen.stdscr.timeout(3000)
-        input_char = self.game.screen.stdscr.getch()
-        self.game.screen.stdscr.timeout(-1)
-        return input_char
+        self.pause()
 
     def message_battle_throw_cargo_interface(self, hold_: list[int]) -> None:
         """Display throw cargo interface"""

@@ -1,4 +1,3 @@
-import curses
 import random
 import time
 from constants import *
@@ -80,16 +79,7 @@ class SeaBattle:
                 elif input_char in [ord('T'), ord('t')]:
                     self.orders = 3
                 else:
-                    input_char = self.battle_screen.message_battle_no_guns()
                     self.orders = self.battle_screen.message_get_order()
-                    while input_char not in [ord('F'), ord('f'), ord('R'), ord('r'), ord('T'), ord('t')]:
-                        input_char = self.game.screen.stdscr.getch()
-                    if input_char in [ord('F'), ord('f')]:
-                        self.orders = 1
-                    elif input_char in [ord('R'), ord('r')]:
-                        self.orders = 2
-                    else:
-                        self.orders = 3
 
             # Update battle stats
             self.battle_screen.fight_stats(num_ships, self.orders, self.game.guns)
@@ -121,10 +111,7 @@ class SeaBattle:
 
                     # Update more ships indicator
                     self.battle_screen.message_ship_ind(num_ships > self.num_on_screen)
-
-                    self.game.screen.stdscr.move(16, 0)
-                    self.game.screen.stdscr.addstr("\n")
-                    self.game.screen.stdscr.refresh()
+                    self.battle_screen.message_lf()
 
                     # Select target
                     targeted = random.randint(0, 9)
@@ -303,13 +290,9 @@ class SeaBattle:
             # Handle enemy firing
             if num_ships > 0:
                 self.battle_screen.message_battle_enemy_firing()
-                curses.flushinp()
-
                 self.battle_screen.draw_enemy_firing(self.ships_on_screen)
-
                 # Update more ships indicator
                 self.battle_screen.message_ship_ind(num_ships > self.num_on_screen)
-
                 self.battle_screen.message_battle_hit()
 
                 # Calculate damage
@@ -318,9 +301,8 @@ class SeaBattle:
                     (random.randint(0, 99) < int((self.game.damage / self.game.capacity) * 100) or
                      int((self.game.damage / self.game.capacity) * 100) > 80)):
                     i = 1
-                    if not DEBUG:  # Only prevent gun loss in debug mode
-                        self.game.guns -= 1
-                        self.game.hold += 10
+                    self.game.guns -= 1
+                    self.game.hold += 10
                     self.battle_screen.fight_stats(num_ships, self.orders, self.game.guns)
                     self.battle_screen.message_battle_gun_hit()
 
