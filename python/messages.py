@@ -2,11 +2,35 @@ import curses
 
 from constants import *
 from fancy_numbers import fancy_numbers
+from keyboard import Keyboard
 
 class Messages:
-    def __init__(self, stdscr: curses.window):
-        self.stdscr = stdscr
+    def __init__(self):
+        self.init_curses()
+        self.keyboard = Keyboard(self.stdscr)  # Initialize keyboard here    
+
         
+    def init_curses(self):
+        """Initialize curses and set up the screen"""
+        self.stdscr = curses.initscr()
+        curses.noecho()
+        curses.cbreak()
+        self.stdscr.keypad(True)
+        curses.start_color()
+        curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
+        curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)
+        curses.init_pair(3, curses.COLOR_YELLOW, curses.COLOR_BLACK)
+        curses.init_pair(4, curses.COLOR_BLUE, curses.COLOR_BLACK)
+        curses.curs_set(0)  # Hide cursor
+        
+    def cleanup_curses(self):
+        """Clean up curses before exiting"""
+        if self.stdscr:
+            curses.nocbreak()
+            self.stdscr.keypad(False)
+            curses.echo()
+            curses.endwin()
+            
     def port_stats(self, status: int,
                    firm: str, hkw_: list[int], hold: int, hold_: list[int],
                    cash: int, bank: int, guns: int, debt: int, month: int, year: int, port: str) -> None:
@@ -218,11 +242,12 @@ class Messages:
         self.stdscr.addstr("friend, Taipan.\n")
 
         self.stdscr.refresh()
-        self.stdscr.timeout(5000)
+        self.stdscr.timeout(L_PAUSE)
         self.stdscr.getch()
         self.stdscr.timeout(-1)
 
     def message_splash(self) -> None:
+        curses.flushinp()
         self.stdscr.clear()
         self.stdscr.addstr("\n")
         self.stdscr.addstr("         _____  _    ___ ____   _    _   _               ===============\n")
@@ -248,6 +273,11 @@ class Messages:
         self.stdscr.addstr(" key\n")
         self.stdscr.addstr("~ ~^~=~^_~^~ =~ \\~~~~~~~'~~~~'~~~~/~~`` ~=~^~ ~^=           to start.\n")
         self.stdscr.addstr(" ~^=~^~_~-=~^~ ^ `--------------'~^~=~^~_~^=~^~=~\n")
+        curses.curs_set(0)
+        self.stdscr.refresh()
+
+        self.stdscr.getch()
+        curses.curs_set(1)
 
     def message_name_firm(self) -> None:
         self.stdscr.clear()
@@ -852,3 +882,174 @@ class Messages:
         self.stdscr.addstr("Paid in full.\n")
         self.stdscr.refresh()
         self.stdscr.timeout(L_PAUSE)
+
+    def message_booty(self) -> None:
+        """Display message about captured booty"""
+        self.stdscr.addstr("We captured some booty.\n")
+        self.stdscr.refresh()
+
+    def message_escaped(self) -> None:
+        """Display message about escaping"""
+        self.stdscr.addstr("We made it!")
+        self.stdscr.refresh()
+
+    def message_pause(self) -> None:
+        """Pause for user input"""
+        self.stdscr.refresh()
+        self.stdscr.timeout(M_PAUSE)
+        self.stdscr.getch()
+        self.stdscr.timeout(-1)
+
+    def message_all_over_now(self) -> None:
+        """Display game over message"""
+        self.stdscr.addstr("The buggers got us, Taipan!!!\n")
+        self.stdscr.addstr("It's all over, now!!!")
+        self.stdscr.refresh()
+
+        self.stdscr.timeout(L_PAUSE)
+        self.stdscr.getch()
+        self.stdscr.timeout(-1)
+
+    def message_after_battle_header(self, location: str) -> None:
+        """Display header after battle"""
+        self.stdscr.move(6, 43)
+        self.stdscr.addstr(" ")
+        self.stdscr.attron(curses.A_REVERSE)
+        self.stdscr.addstr(location)
+        self.stdscr.attroff(curses.A_REVERSE)
+        self.stdscr.addstr("  ")
+
+        self.stdscr.move(16, 0)
+        self.stdscr.clrtobot()
+        self.stdscr.addstr("  Captain's Report\n\n")
+        self.stdscr.refresh()
+
+    def message_quit_input(self) -> None:
+        """Clear the quit input area"""
+        self.stdscr.move(21, 13)
+        self.stdscr.clrtobot()
+        self.stdscr.refresh()
+
+    def message_clear_refresh(self) -> None:
+        """Clear the screen and refresh"""
+        self.stdscr.clear()
+        self.stdscr.refresh()
+        curses.nocbreak()
+        curses.endwin()
+
+    def message_mchenry_repairs(self) -> None:
+        """Display McHenry's repair offer message"""
+        self.stdscr.move(16, 0)
+        self.stdscr.clrtobot()
+        self.stdscr.addstr("Comprador's Report\n\n")
+        self.stdscr.addstr("Taipan, Mc Henry from the Hong Kong\n")
+        self.stdscr.addstr("Shipyards has arrived!!  He says, \"I see\n")
+        self.stdscr.addstr("ye've a wee bit of damage to yer ship.\n")
+        self.stdscr.addstr("Will ye be wanting repairs? ")
+        self.stdscr.refresh()
+
+    def message_mchenry_cost(self, amount: int) -> None:
+        """Display McHenry's repair cost message"""
+        self.stdscr.move(16, 0)
+        self.stdscr.clrtobot()
+        self.stdscr.addstr("Comprador's Report\n\n")
+        self.stdscr.addstr("Taipan, Mc Henry says it will cost\n")
+        self.stdscr.addstr(f"{fancy_numbers(amount)} to repair your ship.\n")
+        self.stdscr.addstr("Will you pay? ")
+        self.stdscr.refresh()
+
+    def message_repairs_complete(self) -> None:
+        """Display repair completion message"""
+        self.stdscr.move(16, 0)
+        self.stdscr.clrtobot()
+        self.stdscr.addstr("Comprador's Report\n\n")
+        self.stdscr.addstr("Taipan, Mc Henry has repaired your\n")
+        self.stdscr.addstr("ship.  It is now in perfect condition.\n")
+        self.stdscr.refresh()
+        self.stdscr.timeout(L_PAUSE)
+        self.stdscr.getch()
+        self.stdscr.timeout(-1)
+
+    def message_mchenry_visit(self) -> None:
+        """Display McHenry's visit message"""
+        self.stdscr.clear()
+        self.stdscr.move(0, 0)
+        self.stdscr.addstr("McHenry is here, Taipan.")
+        self.stdscr.move(1, 0)
+        self.stdscr.addstr("He offers to sell you a new ship.")
+        self.stdscr.move(2, 0)
+        self.stdscr.addstr("Do you wish to buy? (Y/N)")
+        self.stdscr.refresh()
+
+    def message_mchenry_spend(self) -> None:
+        """Display McHenry's spend prompt"""
+        self.stdscr.move(3, 0)
+        self.stdscr.addstr("How much do you wish to spend?")
+        self.stdscr.refresh()
+
+    def message_mchenry_new_capacity(self, capacity: int) -> None:
+        """Display new ship capacity message"""
+        self.stdscr.move(4, 0)
+        self.stdscr.addstr(f"Your new capacity is {capacity}.")
+        self.stdscr.refresh()
+        self.stdscr.timeout(M_PAUSE)
+        self.stdscr.getch()
+        self.stdscr.timeout(-1)
+        self.stdscr.clear()
+        self.stdscr.refresh()
+
+    def message_mchenry_damage(self, percent: int, repair_price: int) -> None:
+        """Display ship damage and repair cost message"""
+        self.stdscr.move(18, 0)
+        self.stdscr.clrtobot()
+        self.stdscr.addstr(f"Och, 'tis a pity to be {percent}% damaged.\n")
+        self.stdscr.addstr(f"We can fix yer whole ship for {repair_price},\n")
+        self.stdscr.addstr("or make partial repairs if you wish.\n")
+        self.stdscr.addstr("How much will ye spend? ")
+        self.stdscr.refresh()
+
+    def message_mchenry_no_free_work(self) -> None:
+        """Display message when player can't afford repairs"""
+        self.stdscr.move(18, 0)
+        self.stdscr.clrtobot()
+        self.stdscr.addstr("McHenry does not work for free, Taipan!\n")
+        self.stdscr.refresh()
+
+    def message_insufficient_funds(self) -> None:
+        """Display message when player has insufficient funds"""
+        self.stdscr.move(18, 0)
+        self.stdscr.clrtobot()
+        self.stdscr.addstr("Taipan, you do not have enough cash!!\n\n")
+        self.stdscr.refresh()
+        self.stdscr.timeout(M_PAUSE)
+        self.stdscr.getch()
+        self.stdscr.timeout(-1)
+
+    def message_wu_difference_offer(self) -> None:
+        """Display Elder Brother Wu's offer to make up the difference"""
+        self.stdscr.addstr("Do you want Elder Brother Wu to make up\n")
+        self.stdscr.addstr("the difference for you? ")
+        self.stdscr.refresh()
+
+    def message_wu_loan_terms(self) -> None:
+        """Display Elder Brother Wu's loan terms"""
+        self.stdscr.move(18, 0)
+        self.stdscr.clrtobot()
+        self.stdscr.addstr("Elder Brother has given McHenry the\n")
+        self.stdscr.addstr("difference between what he wanted and\n")
+        self.stdscr.addstr("your cash on hand and added the same\n")
+        self.stdscr.addstr("amount to your debt.\n")
+        self.stdscr.refresh()
+        self.stdscr.timeout(L_PAUSE)
+        self.stdscr.getch()
+        self.stdscr.timeout(-1)
+
+    def message_wu_deny_help(self) -> None:
+        """Display message when Elder Brother Wu denies help"""
+        self.stdscr.addstr("Very well. Elder Brother Wu will not pay\n")
+        self.stdscr.addstr("McHenry the difference.  I would be very\n")
+        self.stdscr.addstr("wary of pirates if I were you, Taipan.\n")
+        self.stdscr.refresh()
+        self.stdscr.timeout(L_PAUSE)
+        self.stdscr.getch()
+        self.stdscr.timeout(-1) 

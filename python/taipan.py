@@ -5,21 +5,16 @@ Original C version by Jay Link <jlink@ilbbs.com>
 Based on Apple ][ program by Ronald J. Berg
 """
 
-import curses
 import random
 import os
 from fancy_numbers import fancy_numbers
 from sea_battle import SeaBattle
 from constants import *
-from mchenry import McHenry
-from keyboard import Keyboard
 from messages import Messages
 
 class TaipanGame:
     def __init__(self):
-        # Curses screen
-        self.stdscr = None
-
+        self.screen = Messages();
         # Game state
         self.firm = ""  # Firm name (was char[23])
 
@@ -66,38 +61,9 @@ class TaipanGame:
         self.wu_warn = 0
         self.wu_bailout = 0
 
-    def init_curses(self):
-        """Initialize curses and set up the screen"""
-        self.stdscr = curses.initscr()
-        curses.noecho()
-        curses.cbreak()
-        self.stdscr.keypad(True)
-        curses.start_color()
-        curses.init_pair(1, curses.COLOR_RED, curses.COLOR_BLACK)
-        curses.init_pair(2, curses.COLOR_GREEN, curses.COLOR_BLACK)
-        curses.init_pair(3, curses.COLOR_YELLOW, curses.COLOR_BLACK)
-        curses.init_pair(4, curses.COLOR_BLUE, curses.COLOR_BLACK)
-        curses.curs_set(0)  # Hide cursor
-        self.screen = Messages(self.stdscr)
-        self.keyboard = Keyboard(self.stdscr)  # Initialize keyboard here
-
-    def cleanup_curses(self):
-        """Clean up curses before exiting"""
-        if self.stdscr:
-            curses.nocbreak()
-            self.stdscr.keypad(False)
-            curses.echo()
-            curses.endwin()
-
     def splash_intro(self) -> None:
         """Display the game's splash screen and wait for user input."""
-        curses.flushinp()
         self.screen.message_splash()
-        curses.curs_set(0)
-        self.stdscr.refresh()
-
-        self.stdscr.getch()
-        curses.curs_set(1)
 
     def cash_or_guns(self) -> None:
         """Set initial cash and guns. In debug mode, sets debug values."""
@@ -112,7 +78,7 @@ class TaipanGame:
 
             choice = 0
             while choice not in [ord('1'), ord('2')]:
-                choice = self.keyboard.get_one()
+                choice = self.screen.keyboard.get_one()
 
             if choice == ord('1'):
                 self.cash = 400
@@ -153,7 +119,7 @@ class TaipanGame:
             can_retire = (self.cash + self.bank) >= 1000000
             self.screen.message_port_menu(can_retire)
 
-            choice = self.keyboard.get_one()
+            choice = self.screen.keyboard.get_one()
             if self.port == 1:
                 if can_retire:
                     if choice in [ord('B'), ord('b'), ord('S'), ord('s'), 
@@ -185,7 +151,7 @@ class TaipanGame:
         self.screen.message_new_ship(self.damage, amount)
 
         while choice not in [ord('Y'), ord('y'), ord('N'), ord('n')]:
-            choice = self.keyboard.get_one()
+            choice = self.screen.keyboard.get_one()
 
         if choice in [ord('Y'), ord('y')]:
             self.cash -= amount
@@ -208,7 +174,7 @@ class TaipanGame:
             return
         self.screen.message_new_gun(amount)
         while choice not in [ord('Y'), ord('y'), ord('N'), ord('n')]:
-            choice = self.keyboard.get_one()
+            choice = self.screen.keyboard.get_one()
         if choice in [ord('Y'), ord('y')]:
             self.cash -= amount
             self.hold -= 10
@@ -220,63 +186,63 @@ class TaipanGame:
         choice = 0
         wu = 0
         self.screen.message_wu_business()
-        if self.keyboard.choice_yes_no():
+        if self.screen.keyboard.choice_yes_no():
             # You're out of cash, bank, guns, and hold.   Li Yeun bails you out.
-            if (self.cash == 0 and self.bank == 0 and self.guns == 0 and
-                self.hold_[0] == 0 and self.hkw_[0] == 0 and
-                self.hold_[1] == 0 and self.hkw_[1] == 0 and
-                self.hold_[2] == 0 and self.hkw_[2] == 0 and
-                self.hold_[3] == 0 and self.hkw_[3] == 0):
-                
-                i = random.randint(500, 1999)
-                j = random.randint(0, 1999) * self.wu_bailout + 1500
-                self.wu_bailout += 1
+                if (self.cash == 0 and self.bank == 0 and self.guns == 0 and
+                    self.hold_[0] == 0 and self.hkw_[0] == 0 and
+                    self.hold_[1] == 0 and self.hkw_[1] == 0 and
+                    self.hold_[2] == 0 and self.hkw_[2] == 0 and
+                    self.hold_[3] == 0 and self.hkw_[3] == 0):
+                    
+                    i = random.randint(500, 1999)
+                    j = random.randint(0, 1999) * self.wu_bailout + 1500
+                    self.wu_bailout += 1
 
-                while True:
-                    self.screen.message_wu_pity(i, j)
+                    while True:
+                        self.screen.message_wu_pity(i, j)
 
-                    choice = self.keyboard.get_one()
-                    if choice in [ord('N'), ord('n')]:
-                        self.screen.message_wu_game_over()
-                        self.final_stats()
-                    elif choice in [ord('Y'), ord('y')]:
-                        self.cash += i
-                        self.debt += j
-                        self.port_stats()
-                        self.screen.message_wu_good_joss()
-                        return
+                        choice = self.screen.keyboard.get_one()
+                        if choice in [ord('N'), ord('n')]:
+                            self.screen.message_wu_game_over()
+                            self.final_stats()
+                        elif choice in [ord('Y'), ord('y')]:
+                            self.cash += i
+                            self.debt += j
+                            self.port_stats()
+                            self.screen.message_wu_good_joss()
+                            return
 
-            self.screen.message_wu_repay()
+                self.screen.message_wu_repay()
 
-            wu = self.keyboard.get_num(9)
-            if wu == -1:
-                wu = min(self.cash, self.debt)
-            if wu <= self.cash:
-                if wu > self.debt:
-                    self.screen.message_paid_in_full()
-                    wu = self.debt
-                self.cash -= wu
-                if wu > self.debt and self.debt > 0:
-                    self.debt -= (wu + 1)
+                wu = self.screen.keyboard.get_num(9)
+                if wu == -1:
+                        wu = min(self.cash, self.debt)
+                if wu <= self.cash:
+                    if wu > self.debt:
+                        self.screen.message_paid_in_full()
+                        wu = self.debt
+                        self.cash -= wu
+                        if wu > self.debt and self.debt > 0:
+                            self.debt -= (wu + 1)
+                        else:
+                            self.debt -= wu
+                    else:
+                        self.screen.message_insufficient_cash(self.cash)
+
+                self.port_stats()
+
+                self.screen.message_wu_borrow()
+
+                wu = self.screen.keyboard.get_num(9)
+                if wu == -1:
+                        wu = self.cash * 2
+                if wu <= (self.cash * 2):
+                        self.cash += wu
+                        self.debt += wu
                 else:
-                    self.debt -= wu
-            else:
-                self.screen.message_insufficient_cash(self.cash)
+                    self.screen.message_wu_too_much()
 
-            self.port_stats()
-
-            self.screen.message_wu_borrow()
-
-            wu = self.keyboard.get_num(9)
-            if wu == -1:
-                wu = self.cash * 2
-            if wu <= (self.cash * 2):
-                self.cash += wu
-                self.debt += wu
-            else:
-                self.screen.message_wu_too_much()
-
-        self.port_stats()
+                self.port_stats()
 
         if self.debt > 20000 and self.cash > 0 and random.randint(0, 4) == 0:
             num = random.randint(1, 3)
@@ -296,14 +262,14 @@ class TaipanGame:
         amount = ((self.cash / i) * random.random()) + j
         self.screen.message_li_donation(amount)
 
-        if self.keyboard.choice_yes_no():
+        if self.screen.keyboard.choice_yes_no():
             if amount <= self.cash:
                 self.cash -= amount
                 self.li = 1
             else:
                 self.screen.message_not_enough()
 
-                if self.keyboard.choice_yes_no():
+                if self.screen.keyboard.choice_yes_no():
                     amount -= self.cash
                     self.debt += amount
                     self.cash = 0
@@ -329,13 +295,13 @@ class TaipanGame:
     def buy(self) -> None:
         """Handle buying merchandise"""
         self.screen.message_buy_prompt()
-        choice_char = self.keyboard.get_one()
+        choice_char = self.screen.keyboard.get_one()
         choice = 0
         amount = 0
 
         # Get item choice
         while True:
-            choice_char = self.keyboard.get_one()
+            choice_char = self.screen.keyboard.get_one()
             if choice_char in [ord('O'), ord('o')]:
                 choice = 0
                 break
@@ -348,13 +314,13 @@ class TaipanGame:
             elif choice_char in [ord('G'), ord('g')]:
                 choice = 3
                 break
-
-        # Get amount to buy
+            
+                    # Get amount to buy
         while True:
             # Calculate how much player can afford
             afford = self.cash // self.price[choice]
             self.screen.message_afford_amount(afford)
-            amount = self.keyboard.get_num(9)
+            amount = self.screen.keyboard.get_num(9)
             if amount == -1:
                 amount = self.cash // self.price[choice]
             if amount <= self.cash // self.price[choice]:
@@ -369,7 +335,7 @@ class TaipanGame:
     def sell(self) -> None:
         """Handle selling merchandise"""
         self.screen.message_sell_prompt()
-        choice_char = self.keyboard.get_one()
+        choice_char = self.screen.keyboard.get_one()
         choice = 0
         if choice_char in [ord('O'), ord('o')]:
             choice = 0
@@ -384,7 +350,7 @@ class TaipanGame:
         while True:
             self.screen.message_sell_amount(self.items[choice])
 
-            amount = self.keyboard.get_num(9)
+            amount = self.screen.keyboard.get_num(9)
             if amount == -1:
                 amount = self.hold_[choice]
             if self.hold_[choice] >= amount:
@@ -401,7 +367,7 @@ class TaipanGame:
         # Handle deposit
         while True:
             self.screen.message_bank_deposit()
-            amount = self.keyboard.get_num(9)
+            amount = self.screen.keyboard.get_num(9)
             if amount == -1:
                 amount = self.cash
             if amount <= self.cash:
@@ -416,7 +382,7 @@ class TaipanGame:
         # Handle withdrawal
         while True:
             self.screen.message_bank_withdraw()
-            amount = self.keyboard.get_num(9)
+            amount = self.screen.keyboard.get_num(9)
             if amount == -1:
                 amount = self.bank
             if amount <= self.bank:
@@ -445,7 +411,7 @@ class TaipanGame:
             if self.hold_[i] > 0:
                 while True:
                     self.screen.message_to_warehouse(self.items[i])
-                    amount = self.keyboard.get_num(9)
+                    amount = self.screen.keyboard.get_num(9)
                     if amount == -1:
                         amount = self.hold_[i]
                     if amount <= self.hold_[i]:
@@ -465,7 +431,7 @@ class TaipanGame:
             if self.hkw_[i] > 0:
                 while True:
                     self.screen.message_to_hold(self.items[i])
-                    amount = self.keyboard.get_num(9)
+                    amount = self.screen.keyboard.get_num(9)
                     if amount == -1:
                         amount = self.hkw_[i]
                     if amount <= self.hkw_[i]:
@@ -479,8 +445,87 @@ class TaipanGame:
                             self.screen.message_hold_full()
                     else:
                         self.screen.message_not_enough()
-
         self.port_stats()
+        
+    def offer_repairs(self) -> None:
+        """Offer to repair the ship"""
+        self.screen.message_mchenry_repairs()
+
+        choice = self.screen.keyboard.get_one()
+        if choice in [ord('Y'), ord('y')]:
+            self.repair_ship()
+        self.port_stats()
+
+    def _handle_repairs(self) -> None:
+        """Handle the actual repair process"""
+        percent = int((self.damage / self.capacity) * 100)
+        time = ((self.year - 1860) * 12) + self.month
+
+        br = int((((60 * (time + 3) / 4) * random.random() +
+                 25 * (time + 3) / 4) * self.capacity / 50))
+        repair_price = (br * self.damage) + 1
+        amount = 0
+
+        self.screen.message_mchenry_damage(percent, repair_price)
+
+        while True:
+            amount = self.skeyboard.get_num(9)
+            # If player cancels, set amount to repair price
+            if amount == -1:
+                amount = repair_price
+
+            if amount > self.cash:
+                amount -= self._handle_insufficient_funds(amount)
+                
+            if amount <= self.cash:
+                self.cash -= amount
+                assert br > 0  # Don't divide by zero
+                self.damage -= int((amount / br) + 0.5)
+                self.damage = max(0, self.damage)
+                self.port_stats()
+                break
+            else:
+                self.screen.message_mchenry_no_free_work()
+
+    def _handle_insufficient_funds(self, amount: int) -> None:
+        """Handle case where player doesn't have enough cash"""
+        self.screen.message_insufficient_funds()
+        self.screen.message_wu_difference_offer()
+        
+        if self.screen.keyboard.choice_yes_no():
+            self.screen.message_wu_loan_terms()
+            loan = amount - self.cash
+            self.debt += loan
+            return loan
+        else:
+            self.screen.message_wu_deny_help()
+            return 0
+
+    def visit(self) -> None:
+        self.screen.message_mchenry_visit()
+        if self.screen.keyboard.choice_yes_no():
+            self.screen.message_mchenry_spend()
+            amount = self.screen.keyboard.get_num(9)
+            if amount > 0:
+                self.cash -= amount
+                self.capacity += amount // 10
+                self.screen.message_mchenry_new_capacity(self.capacity)
+
+    def repair_ship(self) -> None:
+        """Handle ship repairs"""
+        amount = random.randint(0, 1000 * self.capacity) + 1000
+        if amount > self.cash:
+            self.screen.message_insufficient_cash(self.cash)
+            return
+
+        self.screen.message_mchenry_cost(amount)
+
+        choice = self.screen.keyboard.get_one()
+        if choice in [ord('Y'), ord('y')]:
+            self.cash -= amount
+            self.damage = 0
+            self.screen.message_repairs_complete()
+            self.port_stats()
 
     def quit(self) -> None:
         """Handle quitting current port and moving to new location"""
@@ -490,10 +535,9 @@ class TaipanGame:
         self.screen.message_destinations()
 
         while True:
-            self.stdscr.move(21, 13)
-            self.stdscr.clrtobot()
+            self.screen.message_quit_input()
 
-            choice = self.keyboard.get_num(1)
+            choice = self.screen.keyboard.get_num(1)
 
             if choice == self.port:
                 self.screen.message_already_here()
@@ -530,37 +574,18 @@ class TaipanGame:
         # Handle battle results
         if result > BATTLE_NOT_FINISHED:
             self.port_stats()
-            self.stdscr.move(6, 43)
-            self.stdscr.addstr(" ")
-            self.stdscr.attron(curses.A_REVERSE)
-            self.stdscr.addstr(self.locations[0])
-            self.stdscr.attroff(curses.A_REVERSE)
-            self.stdscr.addstr("  ")
-
-            self.stdscr.move(16, 0)
-            self.stdscr.clrtobot()
-            self.stdscr.addstr("  Captain's Report\n\n")
+            self.screen.message_after_battle_header(self.locations[0])
             if result == BATTLE_WON:  # Victory!
-                self.stdscr.addstr("We captured some booty.\n")
+                self.screen.message_booty()
             elif result == BATTLE_FLED:  # Ran and got away.
-                self.stdscr.addstr("We made it!")
+                self.screen.message_escaped()
             else:  # result == BATTLE_LOST - Ship lost!
                 assert result != BATTLE_INTERRUPTED  # Shouldn't get interrupted when fighting Li Yuen
-                self.stdscr.addstr("The buggers got us, Taipan!!!\n")
-                self.stdscr.addstr("It's all over, now!!!")
-                self.stdscr.refresh()
-
-                self.stdscr.timeout(L_PAUSE)
-                self.stdscr.getch()
-                self.stdscr.timeout(-1)
-
+                self.screen.message_all_over_now()
                 self.final_stats()
                 return
 
-            self.stdscr.refresh()
-            self.stdscr.timeout(M_PAUSE)
-            self.stdscr.getch()
-            self.stdscr.timeout(-1)
+            self.screen.message_pause()
 
         if random.randint(0, 9) == 0:
             self.screen.message_storm_sighted()
@@ -599,7 +624,7 @@ class TaipanGame:
         time = ((self.year - 1860) * 12) + self.month
         self.screen.message_final_stats(self.cash + self.bank - self.debt, self.capacity, self.guns, years, self.month, time)
 
-        if self.keyboard.choice_yes_no():
+        if self.screen.keyboard.choice_yes_no():
             self.bank = 0
             self.hkw_ = [0] * 4
             self.hold_ = [0] * 4
@@ -616,17 +641,13 @@ class TaipanGame:
             self.set_prices()
             return
         else:
-            self.stdscr.clear()
-            self.stdscr.refresh()
-            curses.nocbreak()
-            curses.endwin() 
-            exit(0)
+            self.screen.message_clear_refresh()
+        exit(0)
 
     def main(self) -> None:
         """Main game loop"""
         try:
             random.seed(os.getpid())
-            self.init_curses()
             self.splash_intro()
             self.firm = self.screen.name_firm()
             self.cash_or_guns()
@@ -642,7 +663,7 @@ class TaipanGame:
 
                 # McHenry check
                 if self.port == 1 and self.damage > 0:
-                    McHenry(self).offer_repairs()
+                    self.offer_repairs()
 
                 # Elder Brother Wu warning
                 if self.port == 1 and self.debt >= 10000 and self.wu_warn == 0:
@@ -714,7 +735,7 @@ class TaipanGame:
                     else:
                         self.overload()
         finally:
-            self.cleanup_curses()
+            self.screen.cleanup_curses()
 
     def show_wu_warning(self) -> None:
         """Show Elder Brother Wu's warning message"""
@@ -759,7 +780,7 @@ class TaipanGame:
         elif result == BATTLE_LOST:  # Ship lost!
             self.game_over = True
         self.screen.message_battle_results(result, booty)
-        self.keyboard.get_one()
+        self.screen.keyboard.get_one()
         return result
 
     def retire(self) -> None:
@@ -776,7 +797,7 @@ class TaipanGame:
             self.screen.message_hold_full()
             return
         self.screen.message_to_hold(item)
-        amount = self.keyboard.get_num(4)
+        amount = self.screen.keyboard.get_num(4)
         if amount == -1:
             return
         if amount > self.hkw_[self.items.index(item)]:
@@ -798,7 +819,7 @@ class TaipanGame:
             self.screen.message_warehouse_full()
             return
         self.screen.message_to_hold(item)
-        amount = self.keyboard.get_num(4)
+        amount = self.screen.keyboard.get_num(4)
         if amount == -1:
             return
         if amount > self.hold_[self.items.index(item)]:
@@ -813,4 +834,4 @@ class TaipanGame:
 
 if __name__ == "__main__":
     game = TaipanGame()
-    game.main()
+    game.main() 
