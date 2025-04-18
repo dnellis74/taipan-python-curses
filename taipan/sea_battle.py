@@ -25,7 +25,7 @@ class SeaBattle:
         x = 0
         y = 0
         i = 0
-        input_char = 0
+        input = 0
         status = 0
         self.battle_screen.message_prepare()
         self.battle_screen.fight_stats(num_ships, self.orders, self.game.guns)
@@ -59,27 +59,14 @@ class SeaBattle:
             self.battle_screen.message_ship_ind(num_ships > self.num_on_screen)
 
             # Get player orders
-            input_char = self.battle_screen.message_battle_orders()
-
-            # Process orders
-            if input_char in [ord('F'), ord('f')]:
-                self.orders = 1
-            elif input_char in [ord('R'), ord('r')]:
-                self.orders = 2
-            elif input_char in [ord('T'), ord('t')]:
-                self.orders = 3
-
+            input = self.battle_screen.pause_input()
+            self.orders = self.battle_screen.interpret_char(input, self.orders)
             if self.orders == 0:
-                input_char = self.battle_screen.message_battle_orders()
-
-                if input_char in [ord('F'), ord('f')]:
-                    self.orders = 1
-                elif input_char in [ord('R'), ord('r')]:
-                    self.orders = 2
-                elif input_char in [ord('T'), ord('t')]:
-                    self.orders = 3
-                else:
-                    self.orders = self.battle_screen.message_get_order()
+                input = self.battle_screen.pause_input()
+                self.orders = self.battle_screen.interpret_char(input, self.orders)
+                if (self.orders == 0):
+                    self.battle_screen.message_battle_orders()
+                    self.orders = self.battle_screen.message_get_order_wait()
 
             # Update battle stats
             self.battle_screen.fight_stats(num_ships, self.orders, self.game.guns)
@@ -87,9 +74,14 @@ class SeaBattle:
             if self.orders == 1 and self.game.guns > 0:
                 self.ok = 3
                 self.ik = 1
-                self.battle_screen.message_battle_fight()
-
+                self.targeted = 0
                 sk = 0  # Ships sunk counter
+
+                self.battle_screen.message_battle_fight()
+                input = self.battle_screen.pause_input()
+                self.battle_screen.message_firing()
+                input = self.battle_screen.pause_input(timeout=1000)
+                
                 for i in range(1, self.game.guns + 1):
                     # Check if all ships are sunk
                     if all(ship == 0 for ship in self.ships_on_screen):
@@ -106,8 +98,7 @@ class SeaBattle:
                                     self.ships_on_screen[j] = int(self.game.ec * random.random() + 20)
                                     self.battle_screen.draw_lorcha(x, y)
                                     self.num_on_screen += 1
-
-                            x += 10
+                                x += 10
 
                     # Update more ships indicator
                     self.battle_screen.message_ship_ind(num_ships > self.num_on_screen)
@@ -164,7 +155,9 @@ class SeaBattle:
 
                 # Show battle results
                 self.battle_screen.message_player_hits(sk > 0)
-
+                input = self.battle_screen.pause_input()
+                self.orders = self.battle_screen.interpret_char(input, self.orders)
+                
                 # Check if some ships ran away
                 if random.randint(0, s0 - 1) > int(num_ships * 0.6 / battle_type) and num_ships > 2:
                     divisor = num_ships // 3 // battle_type
@@ -194,16 +187,14 @@ class SeaBattle:
                                 time.sleep(0.1)
 
                     self.battle_screen.message_ship_ind(num_ships > self.num_on_screen)
-
-                    self.orders = self.battle_screen.message_get_order()
             elif self.orders == 1 and self.game.guns == 0:
                 self.battle_screen.message_battle_no_guns()
+                input = self.battle_screen.pause_input()
             # Handle throwing cargo
             elif self.orders == 3:
                 choice = 0
                 amount = 0
                 total = 0
-
                 self.battle_screen.message_battle_throw_cargo_interface(self.game.hold_)
 
                 while choice not in [ord('O'), ord('o'), ord('S'), ord('s'), 
@@ -244,16 +235,16 @@ class SeaBattle:
                         self.game.hold_[3] = 0
                         self.game.hold += total
                         self.ok += (total // 10)
-                    self.battle_screen.pause()
+                    input = self.battle_screen.pause_input()
                 else:
                     self.battle_screen.message_battle_throw_cargo_empty()
-                    self.battle_screen.pause()
+                    input = self.battle_screen.pause_input()
 
             # Handle running or throwing cargo
             if self.orders == 2 or self.orders == 3:
                 if self.orders == 2:
                     self.battle_screen.message_well_run()
-
+                    input = self.battle_screen.pause_input()
                 self.ok += self.ik
                 self.ik += 1
                 assert self.ok > 0  # Prevent division by zero
@@ -261,10 +252,12 @@ class SeaBattle:
 
                 if random.randint(0, self.ok - 1) > random.randint(0, num_ships - 1):
                     self.battle_screen.message_got_away()
+                    input = self.battle_screen.pause_input()
                     num_ships = 0
                 else:
                     self.battle_screen.message_couldnt_lose()
-
+                    input = self.battle_screen.pause_input()
+                    
                     if num_ships > 2 and random.randint(0, 4) == 0:
                         lost = (random.randint(0, num_ships - 1) // 2) + 1
 
@@ -284,12 +277,12 @@ class SeaBattle:
                                     time.sleep(0.1)
 
                             self.battle_screen.message_ship_ind(num_ships > self.num_on_screen)
-
-                        self.orders = self.battle_screen.message_get_order()
-
+            input = self.battle_screen.pause_input()
+            self.orders = self.battle_screen.interpret_char(input, self.orders)
             # Handle enemy firing
             if num_ships > 0:
                 self.battle_screen.message_battle_enemy_firing()
+                input = self.battle_screen.pause_input()
                 self.battle_screen.draw_enemy_firing(self.ships_on_screen)
                 # Update more ships indicator
                 self.battle_screen.message_ship_ind(num_ships > self.num_on_screen)
@@ -305,7 +298,7 @@ class SeaBattle:
                     self.game.hold += 10
                     self.battle_screen.fight_stats(num_ships, self.orders, self.game.guns)
                     self.battle_screen.message_battle_gun_hit()
-
+                    input = self.battle_screen.pause_input()
                 # Apply damage regardless of debug mode
                 self.game.damage += int((self.game.ed * i * battle_type) * random.random() + (i / 2))
 
@@ -313,10 +306,9 @@ class SeaBattle:
                 if battle_type == GENERIC and random.randint(0, 19) == 0:
                     return BATTLE_INTERRUPTED  # Battle interrupted by Li Yuen's pirates
 
-        if num_ships == 0:
-            if self.orders == 1:
-                self.battle_screen.message_battle_victory()
-                self.battle_screen.fight_stats(0, self.orders, self.game.guns)
-                return BATTLE_WON  # Victory!
-            else:
-                return BATTLE_FLED 
+        if self.orders == 1:
+            self.battle_screen.message_battle_victory()
+            self.battle_screen.fight_stats(0, self.orders, self.game.guns)
+            return BATTLE_WON  # Victory!
+        else:
+            return BATTLE_FLED 

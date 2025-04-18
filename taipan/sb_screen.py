@@ -122,17 +122,15 @@ class BattleScreen:
         self.game.screen.stdscr.addstr(f"Current seaworthiness: {status_texts[int(status // 20)]} ({status}%)")
         self.game.screen.stdscr.refresh()
 
-    def message_battle_orders(self) -> int:
+    def message_battle_orders(self) -> None: 
         """Display battle orders prompt"""
-        self.game.screen.stdscr.timeout(M_PAUSE)
-        self.message_lf()
-        # This pause is used to allow the player to read the message
-        self.game.screen.stdscr.timeout(3000)
-        input_char = self.game.screen.stdscr.getch()
+        self.game.screen.stdscr.move(3, 0)
+        self.game.screen.stdscr.clrtoeol()
+        self.game.screen.stdscr.addstr("Taipan, what shall we do??    (f=fight, r=run, t=throw cargo)")
+        self.game.screen.stdscr.refresh()
         self.game.screen.stdscr.timeout(-1)
-        return input_char
 
-    def message_lf(self):
+    def message_lf(self) -> None:
         self.game.screen.stdscr.move(16, 0)
         self.game.screen.stdscr.addstr("\n")
         self.game.screen.stdscr.refresh()
@@ -143,16 +141,11 @@ class BattleScreen:
         self.game.screen.stdscr.clrtoeol()
         self.game.screen.stdscr.addstr("Aye, we'll fight 'em, Taipan.")
         self.game.screen.stdscr.refresh()
-        self.game.screen.stdscr.timeout(M_PAUSE)
-        self.game.screen.stdscr.getch()
-        self.game.screen.stdscr.timeout(-1)
 
+    def message_firing(self) -> None:
         self.game.screen.stdscr.move(3, 0)
         self.game.screen.stdscr.clrtoeol()
         self.game.screen.stdscr.addstr("We're firing on 'em, Taipan!")
-        self.game.screen.stdscr.timeout(1000)
-        self.game.screen.stdscr.getch()
-        self.game.screen.stdscr.timeout(-1)
         self.game.screen.stdscr.refresh()
 
     def message_battle_shots_remaining(self, shots: int) -> None:
@@ -172,9 +165,6 @@ class BattleScreen:
         self.game.screen.stdscr.clrtoeol()
         self.game.screen.stdscr.addstr("They're firing on us, Taipan!")
         self.game.screen.stdscr.refresh()
-        self.game.screen.stdscr.timeout(M_PAUSE)
-        self.game.screen.stdscr.getch()
-        self.game.screen.stdscr.timeout(-1)
         curses.flushinp()
 
     def message_battle_hit(self) -> None:
@@ -194,9 +184,6 @@ class BattleScreen:
         self.game.screen.stdscr.clrtoeol()
         self.game.screen.stdscr.addstr("We got 'em all, Taipan!")
         self.game.screen.stdscr.refresh()
-        self.game.screen.stdscr.timeout(M_PAUSE)
-        self.game.screen.stdscr.getch()
-        self.game.screen.stdscr.timeout(-1)
 
     def message_battle_no_guns(self) -> None:
         """Display no guns message"""
@@ -204,7 +191,6 @@ class BattleScreen:
         self.game.screen.stdscr.clrtoeol()
         self.game.screen.stdscr.addstr("We have no guns, Taipan!!")
         self.game.screen.stdscr.refresh()
-        self.pause()
 
     def message_battle_throw_cargo_interface(self, hold_: list[int]) -> None:
         """Display throw cargo interface"""
@@ -333,31 +319,12 @@ class BattleScreen:
             self.game.screen.stdscr.addstr(" ")
         self.game.screen.stdscr.refresh()
 
-    def message_player_hits(self, success: bool) -> None:
-        """Display player hits message"""
-        self.game.screen.stdscr.move(3, 0)
-        self.game.screen.stdscr.clrtoeol()
-        if success:
-            self.game.screen.stdscr.addstr("We got away from 'em, Taipan!")
-        else:
-            self.game.screen.stdscr.addstr("Couldn't lose 'em.")
-        self.game.screen.stdscr.refresh()
-        self.pause()
-
-    def pause(self):
-        self.game.screen.stdscr.timeout(M_PAUSE)
-        self.game.screen.stdscr.getch()
-        self.game.screen.stdscr.timeout(-1)
-
     def message_well_run(self) -> None:
         """Display run message"""
         self.game.screen.stdscr.move(3, 0)
         self.game.screen.stdscr.clrtoeol()
         self.game.screen.stdscr.addstr("Aye, we'll run, Taipan.")
         self.game.screen.stdscr.refresh()
-        self.game.screen.stdscr.timeout(M_PAUSE)
-        self.game.screen.stdscr.getch()
-        self.game.screen.stdscr.timeout(-1)
 
     def message_got_away(self) -> None:
         """Display got away message"""
@@ -365,9 +332,6 @@ class BattleScreen:
         self.game.screen.stdscr.clrtoeol()
         self.game.screen.stdscr.addstr("We got away from 'em, Taipan!")
         self.game.screen.stdscr.refresh()
-        self.game.screen.stdscr.timeout(M_PAUSE)
-        self.game.screen.stdscr.getch()
-        self.game.screen.stdscr.timeout(-1)
 
     def message_couldnt_lose(self) -> None:
         """Display couldn't lose message"""
@@ -375,22 +339,25 @@ class BattleScreen:
         self.game.screen.stdscr.clrtoeol()
         self.game.screen.stdscr.addstr("Couldn't lose 'em.")
         self.game.screen.stdscr.refresh()
-        self.game.screen.stdscr.timeout(M_PAUSE)
-        self.game.screen.stdscr.getch()
+        
+    def pause_input(self, timeout: int = M_PAUSE) -> int:
+        self.game.screen.stdscr.timeout(timeout)
+        i = self.game.screen.stdscr.getch()
         self.game.screen.stdscr.timeout(-1)
-
-    def message_get_order(self) -> int:
-        """Get battle order from player"""
-        self.game.screen.stdscr.move(16, 0)
-        self.game.screen.stdscr.refresh()
-        self.game.screen.stdscr.timeout(M_PAUSE)
-        input_char = self.game.screen.stdscr.getch()
-        self.game.screen.stdscr.timeout(-1)
-
-        if input_char in [ord('F'), ord('f')]:
+        return i
+        
+    def message_get_order_wait(self) -> int:
+        char = ''
+        while char not in [ord('F'), ord('f'), ord('R'), ord('r'), ord('T'), ord('t')]:
+            char = self.game.screen.stdscr.getch()
+        return self.interpret_char(char)
+        
+    def interpret_char(self, char: int, orders: int = 0) -> int:
+        if char in [ord('F'), ord('f')]:
             return 1
-        elif input_char in [ord('R'), ord('r')]:
+        elif char in [ord('R'), ord('r')]:
             return 2
-        elif input_char in [ord('T'), ord('t')]:
+        elif char in [ord('T'), ord('t')]:
             return 3
-        return 0
+        else:
+            return orders
