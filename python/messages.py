@@ -1,7 +1,7 @@
 import curses
 
 from constants import *
-from keyboard import Keyboard
+from keyboard import Keyboard # type: ignore
 
 class Messages:
     def __init__(self):

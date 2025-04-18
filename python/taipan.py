@@ -187,30 +187,30 @@ class TaipanGame:
         self.screen.message_wu_business()
         if self.screen.keyboard.choice_yes_no():
             # You're out of cash, bank, guns, and hold.   Li Yeun bails you out.
-                if (self.cash == 0 and self.bank == 0 and self.guns == 0 and
-                    self.hold_[0] == 0 and self.hkw_[0] == 0 and
-                    self.hold_[1] == 0 and self.hkw_[1] == 0 and
-                    self.hold_[2] == 0 and self.hkw_[2] == 0 and
-                    self.hold_[3] == 0 and self.hkw_[3] == 0):
-                    
-                    i = random.randint(500, 1999)
-                    j = random.randint(0, 1999) * self.wu_bailout + 1500
-                    self.wu_bailout += 1
+            if (self.cash == 0 and self.bank == 0 and self.guns == 0 and
+                self.hold_[0] == 0 and self.hkw_[0] == 0 and
+                self.hold_[1] == 0 and self.hkw_[1] == 0 and
+                self.hold_[2] == 0 and self.hkw_[2] == 0 and
+                self.hold_[3] == 0 and self.hkw_[3] == 0):
+                
+                i = random.randint(500, 1999)
+                j = random.randint(0, 1999) * self.wu_bailout + 1500
+                self.wu_bailout += 1
 
-                    while True:
-                        self.screen.message_wu_pity(i, j)
+                while True:
+                    self.screen.message_wu_pity(i, j)
 
-                        choice = self.screen.keyboard.get_one()
-                        if choice in [ord('N'), ord('n')]:
-                            self.screen.message_wu_game_over()
-                            self.final_stats()
-                        elif choice in [ord('Y'), ord('y')]:
-                            self.cash += i
-                            self.debt += j
-                            self.port_stats()
-                            self.screen.message_wu_good_joss()
-                            return
-
+                    choice = self.screen.keyboard.get_one()
+                    if choice in [ord('N'), ord('n')]:
+                        self.screen.message_wu_game_over()
+                        self.final_stats()
+                    elif choice in [ord('Y'), ord('y')]:
+                        self.cash += i
+                        self.debt += j
+                        self.port_stats()
+                        self.screen.message_wu_good_joss()
+                        return
+            else:
                 self.screen.message_wu_repay()
 
                 wu = self.screen.keyboard.get_num(9)
@@ -314,7 +314,7 @@ class TaipanGame:
                 choice = 3
                 break
             
-                    # Get amount to buy
+        # Get amount to buy
         while True:
             # Calculate how much player can afford
             afford = self.cash // self.price[choice]
