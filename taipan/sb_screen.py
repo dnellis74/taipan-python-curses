@@ -30,7 +30,8 @@ class BattleScreen:
         self.game.screen.stdscr.addstr("        ")
         self.game.screen.stdscr.move(y + 3, x)
         self.game.screen.stdscr.addstr("        ")
-
+        self.game.screen.stdscr.refresh()
+        
     def draw_blast(self, x: int, y: int) -> None:
         """Draw a blast effect at given coordinates"""
         self.game.screen.stdscr.move(y, x)
@@ -41,6 +42,7 @@ class BattleScreen:
         self.game.screen.stdscr.addstr("********")
         self.game.screen.stdscr.move(y + 3, x)
         self.game.screen.stdscr.addstr("********")
+        self.game.screen.stdscr.refresh()
 
     def sink_lorcha(self, x: int, y: int) -> None:
         """Animate a lorcha sinking at given coordinates"""
@@ -313,31 +315,81 @@ class BattleScreen:
         self.game.screen.stdscr.move(2, 50)
         self.game.screen.stdscr.addstr("+---------")
         self.game.screen.stdscr.move(16, 0)
+        self.game.screen.stdscr.refresh()
+
         
+    def message_prepare(self) -> None:
+        """Prepare screen for battle"""
+        self.game.screen.stdscr.clear()
+        curses.flushinp()
+
+    def message_ship_ind(self, more: bool = False) -> None:
+        """Display ship indicator"""
+        self.game.screen.stdscr.move(11, 62)
+        if more:
+            self.game.screen.stdscr.addstr("+")
+        else:
+            self.game.screen.stdscr.addstr(" ")
+        self.game.screen.stdscr.refresh()
+
+    def message_player_hits(self, success: bool) -> None:
+        """Display player hits message"""
+        self.game.screen.stdscr.move(3, 0)
+        self.game.screen.stdscr.clrtoeol()
+        if success:
+            self.game.screen.stdscr.addstr("We got away from 'em, Taipan!")
+        else:
+            self.game.screen.stdscr.addstr("Couldn't lose 'em.")
+        self.game.screen.stdscr.refresh()
+        self.pause()
+
+    def pause(self):
+        self.game.screen.stdscr.timeout(M_PAUSE)
+        self.game.screen.stdscr.getch()
+        self.game.screen.stdscr.timeout(-1)
+
     def message_well_run(self) -> None:
+        """Display run message"""
         self.game.screen.stdscr.move(3, 0)
         self.game.screen.stdscr.clrtoeol()
         self.game.screen.stdscr.addstr("Aye, we'll run, Taipan.")
         self.game.screen.stdscr.refresh()
-        self.game.screen.stdscr.timeout(3000)
+        self.game.screen.stdscr.timeout(M_PAUSE)
         self.game.screen.stdscr.getch()
         self.game.screen.stdscr.timeout(-1)
 
     def message_got_away(self) -> None:
-        curses.flushinp()
+        """Display got away message"""
         self.game.screen.stdscr.move(3, 0)
         self.game.screen.stdscr.clrtoeol()
         self.game.screen.stdscr.addstr("We got away from 'em, Taipan!")
         self.game.screen.stdscr.refresh()
-        self.game.screen.stdscr.timeout(3000)
+        self.game.screen.stdscr.timeout(M_PAUSE)
         self.game.screen.stdscr.getch()
         self.game.screen.stdscr.timeout(-1)
-        
+
     def message_couldnt_lose(self) -> None:
+        """Display couldn't lose message"""
         self.game.screen.stdscr.move(3, 0)
         self.game.screen.stdscr.clrtoeol()
         self.game.screen.stdscr.addstr("Couldn't lose 'em.")
         self.game.screen.stdscr.refresh()
-        self.game.screen.stdscr.timeout(3000)
+        self.game.screen.stdscr.timeout(M_PAUSE)
         self.game.screen.stdscr.getch()
         self.game.screen.stdscr.timeout(-1)
+
+    def message_get_order(self) -> int:
+        """Get battle order from player"""
+        self.game.screen.stdscr.move(16, 0)
+        self.game.screen.stdscr.refresh()
+        self.game.screen.stdscr.timeout(M_PAUSE)
+        input_char = self.game.screen.stdscr.getch()
+        self.game.screen.stdscr.timeout(-1)
+
+        if input_char in [ord('F'), ord('f')]:
+            return 1
+        elif input_char in [ord('R'), ord('r')]:
+            return 2
+        elif input_char in [ord('T'), ord('t')]:
+            return 3
+        return 0

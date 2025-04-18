@@ -28,12 +28,8 @@ class SeaBattle:
         i = 0
         input_char = 0
         status = 0
-
-        # Clear screen and prepare for battle
-        self.game.screen.stdscr.clear()
-        curses.flushinp()
+        self.battle_screen.message_prepare()
         self.battle_screen.fight_stats(num_ships, self.orders, self.game.guns)
-
         # Main battle loop
         while num_ships > 0:
             # Check ship status
@@ -61,11 +57,7 @@ class SeaBattle:
                     x += 10
 
             # Show more ships indicator
-            self.game.screen.stdscr.move(11, 62)
-            if num_ships > self.num_on_screen:
-                self.game.screen.stdscr.addstr("+")
-            else:
-                self.game.screen.stdscr.addstr(" ")
+            self.battle_screen.message_ship_ind(num_ships > self.num_on_screen)
 
             # Get player orders
             input_char = self.battle_screen.message_battle_orders()
@@ -89,7 +81,7 @@ class SeaBattle:
                     self.orders = 3
                 else:
                     input_char = self.battle_screen.message_battle_no_guns()
-                    self.game.screen.stdscr.timeout(-1)
+                    self.orders = self.battle_screen.message_get_order()
                     while input_char not in [ord('F'), ord('f'), ord('R'), ord('r'), ord('T'), ord('t')]:
                         input_char = self.game.screen.stdscr.getch()
                     if input_char in [ord('F'), ord('f')]:
@@ -128,11 +120,7 @@ class SeaBattle:
                             x += 10
 
                     # Update more ships indicator
-                    self.game.screen.stdscr.move(11, 62)
-                    if num_ships > self.num_on_screen:
-                        self.game.screen.stdscr.addstr("+")
-                    else:
-                        self.game.screen.stdscr.addstr(" ")
+                    self.battle_screen.message_ship_ind(num_ships > self.num_on_screen)
 
                     self.game.screen.stdscr.move(16, 0)
                     self.game.screen.stdscr.addstr("\n")
@@ -149,19 +137,15 @@ class SeaBattle:
 
                     # Show blast animation
                     self.battle_screen.draw_blast(x, y)
-                    self.game.screen.stdscr.refresh()
                     time.sleep(0.1)
 
                     self.battle_screen.draw_lorcha(x, y)
-                    self.game.screen.stdscr.refresh()
                     time.sleep(0.1)
 
                     self.battle_screen.draw_blast(x, y)
-                    self.game.screen.stdscr.refresh()
                     time.sleep(0.1)
 
                     self.battle_screen.draw_lorcha(x, y)
-                    self.game.screen.stdscr.refresh()
                     time.sleep(0.05)
 
                     # Show remaining shots
@@ -183,12 +167,8 @@ class SeaBattle:
                         if delay == 0:
                             time.sleep(ANIMATION_PAUSE)
 
-                        if num_ships == self.num_on_screen:
-                            self.game.screen.stdscr.move(11, 62)
-                            self.game.screen.stdscr.addstr(" ")
-
+                        self.battle_screen.message_ship_ind(num_ships > self.num_on_screen)
                         self.battle_screen.fight_stats(num_ships, self.orders, self.game.guns)
-                        self.game.screen.stdscr.refresh()
 
                     if num_ships == 0:
                         break
@@ -224,29 +204,13 @@ class SeaBattle:
                                 x = ((i + 1) * 10) if i < 5 else ((i - 4) * 10)
                                 y = 6 if i < 5 else 12
                                 self.battle_screen.clear_lorcha(x, y)
-                                self.game.screen.stdscr.refresh()
                                 time.sleep(0.1)
 
-                        if num_ships == self.num_on_screen:
-                            self.game.screen.stdscr.move(11, 62)
-                            self.game.screen.stdscr.addstr(" ")
-                            self.game.screen.stdscr.refresh()
+                    self.battle_screen.message_ship_ind(num_ships > self.num_on_screen)
 
-                    self.game.screen.stdscr.move(16, 0)
-                    self.game.screen.stdscr.refresh()
-                    self.game.screen.stdscr.timeout(M_PAUSE)
-                    input_char = self.game.screen.stdscr.getch()
-                    self.game.screen.stdscr.timeout(-1)
-
-                    if input_char in [ord('F'), ord('f')]:
-                        self.orders = 1
-                    elif input_char in [ord('R'), ord('r')]:
-                        self.orders = 2
-                    elif input_char in [ord('T'), ord('t')]:
-                        self.orders = 3
+                    self.orders = self.battle_screen.message_get_order()
             elif self.orders == 1 and self.game.guns == 0:
                 self.battle_screen.message_battle_no_guns()
-                self.game.screen.stdscr.timeout(-1)
             # Handle throwing cargo
             elif self.orders == 3:
                 choice = 0
@@ -293,16 +257,10 @@ class SeaBattle:
                         self.game.hold_[3] = 0
                         self.game.hold += total
                         self.ok += (total // 10)
-
-                    self.game.screen.stdscr.timeout(M_PAUSE)
-                    self.game.screen.stdscr.getch()
-                    self.game.screen.stdscr.timeout(-1)
+                    self.battle_screen.pause()
                 else:
                     self.battle_screen.message_battle_throw_cargo_empty()
-
-                    self.game.screen.stdscr.timeout(M_PAUSE)
-                    self.game.screen.stdscr.getch()
-                    self.game.screen.stdscr.timeout(-1)
+                    self.battle_screen.pause()
 
             # Handle running or throwing cargo
             if self.orders == 2 or self.orders == 3:
@@ -336,26 +294,11 @@ class SeaBattle:
                                     x = ((i + 1) * 10) if i < 5 else ((i - 4) * 10)
                                     y = 6 if i < 5 else 12
                                     self.battle_screen.clear_lorcha(x, y)
-                                    self.game.screen.stdscr.refresh()
                                     time.sleep(0.1)
 
-                            if num_ships == self.num_on_screen:
-                                self.game.screen.stdscr.move(11, 62)
-                                self.game.screen.stdscr.addstr(" ")
-                                self.game.screen.stdscr.refresh()
+                            self.battle_screen.message_ship_ind(num_ships > self.num_on_screen)
 
-                        self.game.screen.stdscr.move(16, 0)
-                        self.game.screen.stdscr.refresh()
-                        self.game.screen.stdscr.timeout(M_PAUSE)
-                        input_char = self.game.screen.stdscr.getch()
-                        self.game.screen.stdscr.timeout(-1)
-
-                        if input_char in [ord('F'), ord('f')]:
-                            self.orders = 1
-                        elif input_char in [ord('R'), ord('r')]:
-                            self.orders = 2
-                        elif input_char in [ord('T'), ord('t')]:
-                            self.orders = 3
+                        self.orders = self.battle_screen.message_get_order()
 
             # Handle enemy firing
             if num_ships > 0:
@@ -365,11 +308,7 @@ class SeaBattle:
                 self.battle_screen.draw_enemy_firing(self.ships_on_screen)
 
                 # Update more ships indicator
-                self.game.screen.stdscr.move(11, 62)
-                if num_ships > self.num_on_screen:
-                    self.game.screen.stdscr.addstr("+")
-                else:
-                    self.game.screen.stdscr.addstr(" ")
+                self.battle_screen.message_ship_ind(num_ships > self.num_on_screen)
 
                 self.battle_screen.message_battle_hit()
 
@@ -398,4 +337,4 @@ class SeaBattle:
                 self.battle_screen.fight_stats(0, self.orders, self.game.guns)
                 return BATTLE_WON  # Victory!
             else:
-                return BATTLE_FLED  # Ran and got away. 
+                return BATTLE_FLED 
