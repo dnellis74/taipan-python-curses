@@ -1,10 +1,10 @@
 [tool.poetry]
-name = "taipan-vanilla"
+name = "taipan-python-curses"
 version = "0.1.0"
 description = "Straight curses port"
 authors = ["David Nellis <dnellis74@gmail.com>"]
 readme = "README.md"
-packages = [{include = "python"}]
+packages = [{include = "taipan"}]
 
 [tool.poetry.dependencies]
 python = ">=3.9.20"

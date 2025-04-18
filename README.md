@@ -1,24 +1,18 @@
 # Curses Program Port
 
-This project contains a port of a C program using curses to Python using the built-in curses module.
+This a port of https://github.com/cymonsgames/CymonsGames/tree/master/taipan to python-curses.
 
-## Project Structure
+I've mostly has the game logic separated from curses with generous help from AI.
 
-- `original_c/` - Contains the original C source code
-- `python/` - Contains the Python implementation
+It's still a hair buggy, but it's ready to be forked for the next steps.
+
+The next fork will be moving from curses, to textual, or some modern TUI, and then making it responsive.
 
 ## Porting Process
 
 The Python implementation will maintain the same functionality as the original C program while following Python best practices. The port will use Python's built-in `curses` module which provides similar functionality to the C curses library.
 
 ## Running the Code
-
-### C Version
-```bash
-cd original_c
-gcc -o program program.c -lncurses
-./program
-```
 
 ### Python Version (with Poetry)
 ```bash
