@@ -461,3 +461,92 @@ def message_pirates_help(stdscr: curses.window, location: str):
     stdscr.timeout(M_PAUSE)
     stdscr.getch()
     stdscr.timeout(-1)
+
+def message_wu_pity(stdscr: curses.window, i: int, j: int) -> None:
+    stdscr.move(16, 0)
+    stdscr.clrtobot()
+    stdscr.addstr("Comprador's Report\n\n")
+    stdscr.addstr("Elder Brother is aware of your plight,\n")
+    stdscr.addstr("Taipan.  He is willing to loan you an\n")
+    stdscr.addstr(f"additional {i} if you will pay back\n")
+    stdscr.addstr(f"{j}. Are you willing, Taipan? ")
+    stdscr.refresh()
+
+def message_wu_game_over(stdscr: curses.window) -> None:
+    stdscr.move(16, 0)
+    stdscr.clrtobot()
+    stdscr.addstr("Comprador's Report\n\n")
+    stdscr.addstr("Very well, Taipan, the game is over!\n")
+    stdscr.refresh()
+
+def message_wu_good_joss(stdscr: curses.window) -> None:
+    stdscr.move(16, 0)
+    stdscr.clrtobot()
+    stdscr.addstr("Comprador's Report\n\n")
+    stdscr.addstr("Very well, Taipan.  Good joss!!\n")
+    stdscr.refresh()
+
+def message_wu_repay(stdscr: curses.window) -> None:
+    stdscr.move(16, 0)
+    stdscr.clrtobot()
+    stdscr.addstr("Comprador's Report\n\n")
+    stdscr.addstr("How much do you wish to repay\n")
+    stdscr.addstr("him? ")
+    stdscr.refresh()
+
+def message_wu_borrow(stdscr: curses.window) -> None:
+    stdscr.move(16, 0)
+    stdscr.clrtobot()
+    stdscr.addstr("Comprador's Report\n\n")
+    stdscr.addstr("How much do you wish to\n")
+    stdscr.addstr("borrow? ")
+    stdscr.refresh()
+
+def message_wu_too_much(stdscr: curses.window) -> None:
+    stdscr.addstr("\n\nHe won't loan you so much, Taipan!")
+    stdscr.refresh()
+
+def message_price_change(stdscr: curses.window, item: str, price: int, is_drop: bool) -> None:
+    stdscr.move(16, 0)
+    stdscr.clrtobot()
+    stdscr.addstr("Comprador's Report\n\n")
+    stdscr.addstr(f"Taipan!!  The price of {item}\n")
+    if is_drop:
+        stdscr.addstr(f"has dropped to {price}!!\n")
+    else:
+        stdscr.addstr(f"has risen to {price}!!\n")
+    stdscr.refresh()
+
+def message_buy_prompt(stdscr: curses.window) -> None:
+    stdscr.move(22, 0)
+    stdscr.clrtobot()
+    stdscr.addstr("What do you wish me to buy, Taipan? ")
+    stdscr.refresh()
+
+def message_sell_prompt(stdscr: curses.window) -> None:
+    stdscr.move(22, 0)
+    stdscr.clrtobot()
+    stdscr.addstr("What do you wish me to sell, Taipan? ")
+    stdscr.refresh()
+
+def message_bank_deposit(stdscr: curses.window) -> None:
+    stdscr.move(16, 0)
+    stdscr.clrtobot()
+    stdscr.addstr("Comprador's Report\n\n")
+    stdscr.addstr("How much will you deposit? ")
+    stdscr.refresh()
+
+def message_bank_withdraw(stdscr: curses.window) -> None:
+    stdscr.move(16, 0)
+    stdscr.clrtobot()
+    stdscr.addstr("Comprador's Report\n\n")
+    stdscr.addstr("How much will you withdraw? ")
+    stdscr.refresh()
+
+def message_transfer_prompt(stdscr: curses.window, item: str) -> None:
+    stdscr.move(16, 0)
+    stdscr.clrtobot()
+    stdscr.addstr("Comprador's Report\n\n")
+    stdscr.addstr(f"How much {item} shall I move\n")
+    stdscr.addstr("to the warehouse, Taipan? ")
+    stdscr.refresh()

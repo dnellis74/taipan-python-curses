@@ -9,28 +9,10 @@ import curses
 import random
 import os
 from sea_battle import SeaBattle
-from constants import (
-    DEBUG, GENERIC, LI_YUEN, BATTLE_NOT_FINISHED, BATTLE_WON, BATTLE_INTERRUPTED,
-    BATTLE_FLED, BATTLE_LOST, ANIMATION_PAUSE, M_PAUSE, L_PAUSE, STARTING_YEAR, STARTING_MONTH, STARTING_PORT, STARTING_CAPACITY,
-    STARTING_HOLD, STARTING_GUNS, STARTING_DAMAGE, STARTING_CASH, STARTING_BANK,
-    STARTING_DEBT, STARTING_BOOTY, BASE_ENEMY_HEALTH, BASE_ENEMY_DAMAGE, MAX_WAREHOUSE_CAPACITY, OPIUM, SILK, ARMS,
-    GENERAL, AT_SEA, HONG_KONG, SHANGHAI, NAGASAKI, SAIGON, MANILA, SINGAPORE,
-    BATAVIA, CRITICAL, POOR, FAIR, GOOD, PRIME, PERFECT
-)
+from constants import *
 from mchenry import McHenry
 from shared import choice_yes_no, fancy_numbers, get_one, get_num
-from messages import (
-    message_splash, message_name_firm, message_cash_or_guns, message_new_ship,
-    message_new_gun, message_retire, message_warehouse_full, message_not_enough,
-    message_comprador_report, message_hold_full, message_captains_report,
-    message_hostile_ships, message_li_yuen_pirates, message_good_joss,
-    message_li_yuen_fleet, message_battle_results, message_wu_li_deny,
-    message_wu_li_accept, message_mugged, message_wu_business, message_wu_warning,
-    message_li_yuen, message_robbed, message_warehouse_robbery, message_opium_seized,
-    message_no_cargo, message_destinations, message_storm_sighted, message_going_down,
-    message_sinking, message_made_it, message_li_donation, message_off_course,
-    message_arriving, message_final_stats, message_pirates_help
-)
+from messages import *
 
 class TaipanGame:
     def __init__(self):
@@ -126,10 +108,6 @@ class TaipanGame:
         """Set the firm name. In debug mode, sets to 'debug'."""
         if DEBUG:
             self.firm = "debug"
-            self.stdscr.clear()
-            self.stdscr.addstr(5, 10, f"Welcome to {self.firm}, Taipan!")
-            self.stdscr.refresh()
-            # time.sleep(1)  # Brief pause to show the message
         else:
             message_name_firm(self.stdscr)
             character = 0
@@ -454,51 +432,20 @@ class TaipanGame:
                 self.wu_bailout += 1
 
                 while True:
-                    self.stdscr.move(16, 0)
-                    self.stdscr.clrtobot()
-                    self.stdscr.addstr("Comprador's Report\n\n")
-                    self.stdscr.addstr("Elder Brother is aware of your plight,\n")
-                    self.stdscr.addstr("Taipan.  He is willing to loan you an\n")
-                    self.stdscr.addstr(f"additional {i} if you will pay back\n")
-                    self.stdscr.addstr(f"{j}. Are you willing, Taipan? ")
-                    self.stdscr.refresh()
+                    message_wu_pity(self.stdscr, i, j)
 
                     choice = get_one(self.stdscr)
                     if choice in [ord('N'), ord('n')]:
-                        self.stdscr.move(16, 0)
-                        self.stdscr.clrtobot()
-                        self.stdscr.addstr("Comprador's Report\n\n")
-                        self.stdscr.addstr("Very well, Taipan, the game is over!\n")
-
-                        self.stdscr.refresh()
-                        self.stdscr.timeout(L_PAUSE)
-                        self.stdscr.getch()
-                        self.stdscr.timeout(-1)
-
+                        message_wu_game_over(self.stdscr)
                         self.final_stats()
                     elif choice in [ord('Y'), ord('y')]:
                         self.cash += i
                         self.debt += j
                         self.port_stats()
-
-                        self.stdscr.move(16, 0)
-                        self.stdscr.clrtobot()
-                        self.stdscr.addstr("Comprador's Report\n\n")
-                        self.stdscr.addstr("Very well, Taipan.  Good joss!!\n")
-
-                        self.stdscr.refresh()
-                        self.stdscr.timeout(L_PAUSE)
-                        self.stdscr.getch()
-                        self.stdscr.timeout(-1)
-
+                        message_wu_good_joss(self.stdscr)
                         return
 
-            self.stdscr.move(16, 0)
-            self.stdscr.clrtobot()
-            self.stdscr.addstr("Comprador's Report\n\n")
-            self.stdscr.addstr("How much do you wish to repay\n")
-            self.stdscr.addstr("him? ")
-            self.stdscr.refresh()
+            message_wu_repay(self.stdscr)
 
             wu = get_num(self.stdscr, 9)
             if wu == -1:
@@ -528,12 +475,7 @@ class TaipanGame:
 
             self.port_stats()
 
-            self.stdscr.move(16, 0)
-            self.stdscr.clrtobot()
-            self.stdscr.addstr("Comprador's Report\n\n")
-            self.stdscr.addstr("How much do you wish to\n")
-            self.stdscr.addstr("borrow? ")
-            self.stdscr.refresh()
+            message_wu_borrow(self.stdscr)
 
             wu = get_num(self.stdscr, 9)
             if wu == -1:
@@ -542,7 +484,7 @@ class TaipanGame:
                 self.cash += wu
                 self.debt += wu
             else:
-                self.stdscr.addstr("\n\nHe won't loan you so much, Taipan!")
+                message_wu_too_much(self.stdscr)
                 self.stdscr.refresh()
                 self.stdscr.timeout(L_PAUSE)
                 self.stdscr.getch()
@@ -562,17 +504,11 @@ class TaipanGame:
         j = random.randint(0, 1)
 
         item = self.items[i]
-
-        self.stdscr.move(16, 0)
-        self.stdscr.clrtobot()
-        self.stdscr.addstr("Comprador's Report\n\n")
-        self.stdscr.addstr(f"Taipan!!  The price of {item}\n")
         if j == 0:
             self.price[i] = self.price[i] // 5
-            self.stdscr.addstr(f"has dropped to {self.price[i]}!!\n")
         else:
             self.price[i] = self.price[i] * (random.randint(0, 4) + 5)
-            self.stdscr.addstr(f"has risen to {self.price[i]}!!\n")
+        message_price_change(self.stdscr, item, self.price[i], j == 0)
 
         self.stdscr.refresh()
         self.stdscr.timeout(M_PAUSE)
@@ -586,11 +522,7 @@ class TaipanGame:
 
         # Get item choice
         while True:
-            self.stdscr.move(22, 0)
-            self.stdscr.clrtobot()
-            self.stdscr.addstr("What do you wish me to buy, Taipan? ")
-            self.stdscr.refresh()
-
+            message_buy_prompt(self.stdscr)
             choice_char = get_one(self.stdscr)
             if choice_char in [ord('O'), ord('o')]:
                 choice = 0
@@ -604,7 +536,7 @@ class TaipanGame:
             elif choice_char in [ord('G'), ord('g')]:
                 choice = 3
                 break
-            
+
         # Get amount to buy
         while True:
             self.stdscr.move(21, 42)
@@ -662,11 +594,7 @@ class TaipanGame:
 
         # Get item choice
         while True:
-            self.stdscr.move(22, 0)
-            self.stdscr.clrtobot()
-            self.stdscr.addstr("What do you wish me to sell, Taipan? ")
-            self.stdscr.refresh()
-
+            message_sell_prompt(self.stdscr)
             choice_char = get_one(self.stdscr)
             if choice_char in [ord('O'), ord('o')]:
                 choice = 0
@@ -705,12 +633,7 @@ class TaipanGame:
 
         # Handle deposit
         while True:
-            self.stdscr.move(16, 0)
-            self.stdscr.clrtobot()
-            self.stdscr.addstr("Comprador's Report\n\n")
-            self.stdscr.addstr("How much will you deposit? ")
-            self.stdscr.refresh()
-
+            message_bank_deposit(self.stdscr)
             amount = get_num(self.stdscr, 9)
             if amount == -1:
                 amount = self.cash
@@ -732,12 +655,7 @@ class TaipanGame:
 
         # Handle withdrawal
         while True:
-            self.stdscr.move(16, 0)
-            self.stdscr.clrtobot()
-            self.stdscr.addstr("Comprador's Report\n\n")
-            self.stdscr.addstr("How much will you withdraw? ")
-            self.stdscr.refresh()
-
+            message_bank_withdraw(self.stdscr)
             amount = get_num(self.stdscr, 9)
             if amount == -1:
                 amount = self.bank
@@ -771,13 +689,7 @@ class TaipanGame:
         for i in range(4):
             if self.hold_[i] > 0:
                 while True:
-                    self.stdscr.move(16, 0)
-                    self.stdscr.clrtobot()
-                    self.stdscr.addstr("Comprador's Report\n\n")
-                    self.stdscr.addstr(f"How much {self.items[i]} shall I move\n")
-                    self.stdscr.addstr("to the warehouse, Taipan? ")
-                    self.stdscr.refresh()
-
+                    message_transfer_prompt(self.stdscr, self.items[i])
                     amount = get_num(self.stdscr, 9)
                     if amount == -1:
                         amount = self.hold_[i]
@@ -1170,25 +1082,6 @@ class TaipanGame:
         self.hold_[self.items.index(item)] -= amount
         self.hold -= amount
         self.hkw_[self.items.index(item)] += amount
-
-    def check_pirates(self) -> None:
-        """Check for pirate encounters"""
-        if random.random() < 0.1:  # 10% chance of pirates
-            message_captains_report(self.stdscr)
-            num_ships = random.randint(1, 3)
-            if random.random() < 0.3:  # 30% chance of Li Yuen's pirates
-                message_li_yuen_pirates(self.stdscr)
-                if random.random() < 0.5:  # 50% chance they let you be
-                    message_good_joss(self.stdscr)
-                    get_one(self.stdscr)
-                    return
-                message_li_yuen_fleet(self.stdscr, num_ships)
-                result = self.sea_battle(LI_YUEN, num_ships)
-            else:
-                message_hostile_ships(self.stdscr, num_ships)
-                result = self.sea_battle(GENERIC, num_ships)
-            if result == BATTLE_LOST:
-                self.game_over = True
 
 if __name__ == "__main__":
     game = TaipanGame()
