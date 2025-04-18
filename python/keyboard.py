@@ -9,32 +9,7 @@ def choice_yes_no(stdscr: curses.window) -> bool:
     else:
         return False
     
-def fancy_numbers(num: float) -> str:
-    """
-    Format numbers in a fancy way, converting large numbers to millions with decimal points.
-    Returns the formatted string.
-    """
-    if num >= 100000000:
-        num1 = int(num / 1000000)
-        return f"{num1} Million"
-    elif num >= 10000000:
-        num1 = int(num / 1000000)
-        num2 = int((int(num) % 1000000) / 100000)
-        if num2 > 0:
-            return f"{num1}.{num2} Million"
-        else:
-            return f"{num1} Million"
-    elif num >= 1000000:
-        num1 = int(num / 1000000)
-        num2 = int((int(num) % 1000000) / 10000)
-        if num2 > 0:
-            return f"{num1}.{num2} Million"
-        else:
-            return f"{num1} Million"
-    else:
-        return str(int(num))
-
-def get_one(stdscr) -> int:
+def get_one(stdscr: curses.window) -> int:
     """
     Get a single character input from the user.
     Handles backspace and escape key.
@@ -69,7 +44,7 @@ def get_one(stdscr) -> int:
 
     return choice
 
-def get_num(stdscr, maxlen: int) -> int:
+def get_num(stdscr: curses.window, maxlen: int) -> int:
     """
     Get a number input from the user with maximum length.
     Handles backspace, escape, and allows 'A' for -1.

@@ -2,7 +2,7 @@ import random
 from typing import Optional
 
 from constants import M_PAUSE, L_PAUSE
-from shared import get_one, get_num, choice_yes_no
+from python.keyboard import get_one, get_num, choice_yes_no
 
 class McHenry:
     def __init__(self, game):

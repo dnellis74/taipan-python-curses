@@ -6,7 +6,7 @@ from constants import (
     BATTLE_FLED, BATTLE_LOST, ANIMATION_PAUSE, M_PAUSE, L_PAUSE, BASE_ENEMY_HEALTH,
     BASE_ENEMY_DAMAGE
 )
-from shared import get_one
+from python.keyboard import get_one
 
 class SeaBattle:
     def __init__(self, game):
@@ -152,9 +152,6 @@ class SeaBattle:
         i = 0
         input_char = 0
         status = 0
-
-        # Calculate booty
-        self.game.booty = (game_time // 4 * 1000 * num_ships) + random.randint(0, 999) + 250
 
         # Clear screen and prepare for battle
         self.game.stdscr.clear()
