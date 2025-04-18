@@ -14,49 +14,6 @@ class SeaBattle:
         self.ik = 1
         self.battle_screen = BattleScreen(game)
 
-    def fight_stats(self, ships: int, orders: int) -> None:
-        """Display battle statistics during sea battle"""
-        # Determine order text based on current orders
-        if orders == 0:
-            ch_orders = ""
-        elif orders == 1:
-            ch_orders = "Fight      "
-        elif orders == 2:
-            ch_orders = "Run        "
-        else:
-            ch_orders = "Throw Cargo"
-
-        # Display number of attacking ships
-        self.game.screen.stdscr.move(0, 0)
-        if ships >= 1000:
-            self.game.screen.stdscr.addstr(str(ships))
-        elif ships >= 100:
-            self.game.screen.stdscr.addstr(f" {ships}")
-        elif ships >= 10:
-            self.game.screen.stdscr.addstr(f"  {ships}")
-        else:
-            self.game.screen.stdscr.addstr(f"   {ships}")
-
-        # Display ship/ships text
-        self.game.screen.stdscr.move(0, 5)
-        if ships == 1:
-            self.game.screen.stdscr.addstr("ship attacking, Taipan! \n")
-        else:
-            self.game.screen.stdscr.addstr("ships attacking, Taipan!\n")
-
-        # Display current orders
-        self.game.screen.stdscr.addstr(f"Your orders are to: {ch_orders}")
-
-        # Display guns information
-        self.game.screen.stdscr.move(0, 50)
-        self.game.screen.stdscr.addstr("|  We have")
-        self.game.screen.stdscr.move(1, 50)
-        self.game.screen.stdscr.clrtoeol()
-        self.game.screen.stdscr.addstr(f"|  {self.game.guns} {'gun' if self.game.guns == 1 else 'guns'}")
-        self.game.screen.stdscr.move(2, 50)
-        self.game.screen.stdscr.addstr("+---------")
-        self.game.screen.stdscr.move(16, 0)
-
     def battle(self, battle_type: int, num_ships: int) -> int:
         """Handle sea battle with pirates"""
         # Initialize battle variables
@@ -76,7 +33,7 @@ class SeaBattle:
         # Clear screen and prepare for battle
         self.game.screen.stdscr.clear()
         curses.flushinp()
-        self.fight_stats(num_ships, self.orders)
+        self.battle_screen.fight_stats(num_ships, self.orders, self.game.guns)
 
         # Main battle loop
         while num_ships > 0:
@@ -148,7 +105,7 @@ class SeaBattle:
                         self.orders = 3
 
             # Update battle stats
-            self.fight_stats(num_ships, self.orders)
+            self.battle_screen.fight_stats(num_ships, self.orders, self.game.guns)
             # Handle fighting
             if self.orders == 1 and self.game.guns > 0:
                 self.ok = 3
@@ -235,7 +192,7 @@ class SeaBattle:
                             self.game.screen.stdscr.move(11, 62)
                             self.game.screen.stdscr.addstr(" ")
 
-                        self.fight_stats(num_ships, self.orders)
+                        self.battle_screen.fight_stats(num_ships, self.orders, self.game.guns)
                         self.game.screen.stdscr.refresh()
 
                     if num_ships == 0:
@@ -256,7 +213,7 @@ class SeaBattle:
                         ran = 1
 
                     num_ships -= ran
-                    self.fight_stats(num_ships, self.orders)
+                    self.battle_screen.fight_stats(num_ships, self.orders, self.game.guns)
                     self.battle_screen.message_battle_ships_escaped(ran)
 
                     # Check for Li Yuen's intervention when ships run away
@@ -392,7 +349,7 @@ class SeaBattle:
                         lost = (random.randint(0, num_ships - 1) // 2) + 1
 
                         num_ships -= lost
-                        self.fight_stats(num_ships, self.orders)
+                        self.battle_screen.fight_stats(num_ships, self.orders, self.game.guns)
                         self.battle_screen.message_battle_ships_escaped(lost)
 
                         if num_ships <= 10:
@@ -430,32 +387,7 @@ class SeaBattle:
                 self.battle_screen.message_battle_enemy_firing()
                 curses.flushinp()
 
-                # Show blast animation
-                for i in range(3):
-                    for y in range(24):
-                        for x in range(79):
-                            self.game.screen.stdscr.move(y, x)
-                            self.game.screen.stdscr.addstr("*")
-                    self.game.screen.stdscr.refresh()
-                    time.sleep(0.2)
-                    self.game.screen.stdscr.clear()
-                    self.game.screen.stdscr.refresh()
-                    time.sleep(0.2)
-
-                self.fight_stats(num_ships, self.orders)
-
-                # Redraw ships
-                x = 10
-                y = 6
-                for i in range(10):
-                    if i == 5:
-                        x = 10
-                        y = 12
-
-                    if self.ships_on_screen[i] > 0:
-                        self.battle_screen.draw_lorcha(x, y)
-
-                    x += 10
+                self.battle_screen.draw_enemy_firing(self.ships_on_screen)
 
                 # Update more ships indicator
                 self.game.screen.stdscr.move(11, 62)
@@ -475,9 +407,8 @@ class SeaBattle:
                     if not DEBUG:  # Only prevent gun loss in debug mode
                         self.game.guns -= 1
                         self.game.hold += 10
+                    self.battle_screen.fight_stats(num_ships, self.orders, self.game.guns)
                     self.battle_screen.message_battle_gun_hit(num_ships)
-                    self.fight_stats(num_ships, self.orders)
-
 
                 # Apply damage regardless of debug mode
                 self.game.damage += int((self.game.ed * i * battle_type) * random.random() + (i / 2))
@@ -489,7 +420,7 @@ class SeaBattle:
         if num_ships == 0:
             if self.orders == 1:
                 self.battle_screen.message_battle_victory()
-                self.fight_stats(0, self.orders)
+                self.battle_screen.fight_stats(0, self.orders, self.game.guns)
                 return BATTLE_WON  # Victory!
             else:
                 return BATTLE_FLED  # Ran and got away. 

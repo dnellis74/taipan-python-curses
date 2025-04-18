@@ -84,6 +84,33 @@ class BattleScreen:
         if delay == 0:
             time.sleep(ANIMATION_PAUSE)
 
+    def draw_enemy_firing(self, ships_on_screen: list) -> None:
+        """Draw enemy firing animation and redraw ships"""
+        # Show blast animation
+        for i in range(3):
+            for y in range(24):
+                for x in range(79):
+                    self.game.screen.stdscr.move(y, x)
+                    self.game.screen.stdscr.addstr("*")
+            self.game.screen.stdscr.refresh()
+            time.sleep(0.2)
+            self.game.screen.stdscr.clear()
+            self.game.screen.stdscr.refresh()
+            time.sleep(0.2)
+
+        # Redraw ships
+        x = 10
+        y = 6
+        for i in range(10):
+            if i == 5:
+                x = 10
+                y = 12
+
+            if ships_on_screen[i] > 0:
+                self.draw_lorcha(x, y)
+
+            x += 10
+
     def message_battle_status(self, status: int) -> None:
         """Display current battle status"""
         self.game.screen.stdscr.move(3, 0)
@@ -231,3 +258,46 @@ class BattleScreen:
         self.game.screen.stdscr.timeout(M_PAUSE)
         self.game.screen.stdscr.getch()
         self.game.screen.stdscr.timeout(-1)
+
+    def fight_stats(self, ships: int, orders: int, guns: int) -> None:
+        """Display battle statistics during sea battle"""
+        # Determine order text based on current orders
+        if orders == 0:
+            ch_orders = ""
+        elif orders == 1:
+            ch_orders = "Fight      "
+        elif orders == 2:
+            ch_orders = "Run        "
+        else:
+            ch_orders = "Throw Cargo"
+
+        # Display number of attacking ships
+        self.game.screen.stdscr.move(0, 0)
+        if ships >= 1000:
+            self.game.screen.stdscr.addstr(str(ships))
+        elif ships >= 100:
+            self.game.screen.stdscr.addstr(f" {ships}")
+        elif ships >= 10:
+            self.game.screen.stdscr.addstr(f"  {ships}")
+        else:
+            self.game.screen.stdscr.addstr(f"   {ships}")
+
+        # Display ship/ships text
+        self.game.screen.stdscr.move(0, 5)
+        if ships == 1:
+            self.game.screen.stdscr.addstr("ship attacking, Taipan! \n")
+        else:
+            self.game.screen.stdscr.addstr("ships attacking, Taipan!\n")
+
+        # Display current orders
+        self.game.screen.stdscr.addstr(f"Your orders are to: {ch_orders}")
+
+        # Display guns information
+        self.game.screen.stdscr.move(0, 50)
+        self.game.screen.stdscr.addstr("|  We have")
+        self.game.screen.stdscr.move(1, 50)
+        self.game.screen.stdscr.clrtoeol()
+        self.game.screen.stdscr.addstr(f"|  {guns} {'gun' if guns == 1 else 'guns'}")
+        self.game.screen.stdscr.move(2, 50)
+        self.game.screen.stdscr.addstr("+---------")
+        self.game.screen.stdscr.move(16, 0)
