@@ -3,6 +3,7 @@ import time
 from constants import *
 from sb_screen import BattleScreen
 
+
 class SeaBattle:
     def __init__(self, game):
         self.game = game
@@ -50,7 +51,9 @@ class SeaBattle:
                 if num_ships > self.num_on_screen:
                     if self.ships_on_screen[i] == 0:
                         time.sleep(0.1)  # Small delay for animation
-                        self.ships_on_screen[i] = int(self.game.ec * random.random() + 20)
+                        self.ships_on_screen[i] = int(
+                            self.game.ec * random.random() + 20
+                        )
                         self.battle_screen.draw_lorcha(x, y)
                         self.num_on_screen += 1
                     x += 10
@@ -64,7 +67,7 @@ class SeaBattle:
             if self.orders == 0:
                 input = self.battle_screen.pause_input()
                 self.orders = self.battle_screen.interpret_char(input, self.orders)
-                if (self.orders == 0):
+                if self.orders == 0:
                     self.battle_screen.message_battle_orders()
                     self.orders = self.battle_screen.message_get_order_wait()
 
@@ -81,7 +84,7 @@ class SeaBattle:
                 input = self.battle_screen.pause_input()
                 self.battle_screen.message_firing()
                 input = self.battle_screen.pause_input(timeout=1000)
-                
+
                 for i in range(1, self.game.guns + 1):
                     # Check if all ships are sunk
                     if all(ship == 0 for ship in self.ships_on_screen):
@@ -95,7 +98,9 @@ class SeaBattle:
                             if num_ships > self.num_on_screen:
                                 if self.ships_on_screen[j] == 0:
                                     time.sleep(0.1)
-                                    self.ships_on_screen[j] = int(self.game.ec * random.random() + 20)
+                                    self.ships_on_screen[j] = int(
+                                        self.game.ec * random.random() + 20
+                                    )
                                     self.battle_screen.draw_lorcha(x, y)
                                     self.num_on_screen += 1
                                 x += 10
@@ -127,7 +132,9 @@ class SeaBattle:
                     time.sleep(0.05)
 
                     # Show remaining shots
-                    self.battle_screen.message_battle_shots_remaining(self.game.guns - i)
+                    self.battle_screen.message_battle_shots_remaining(
+                        self.game.guns - i
+                    )
 
                     # Apply damage with more sophisticated calculation
                     self.ships_on_screen[targeted] -= random.randint(10, 40)
@@ -145,8 +152,12 @@ class SeaBattle:
                         if delay == 0:
                             time.sleep(ANIMATION_PAUSE)
 
-                        self.battle_screen.message_ship_ind(num_ships > self.num_on_screen)
-                        self.battle_screen.fight_stats(num_ships, self.orders, self.game.guns)
+                        self.battle_screen.message_ship_ind(
+                            num_ships > self.num_on_screen
+                        )
+                        self.battle_screen.fight_stats(
+                            num_ships, self.orders, self.game.guns
+                        )
 
                     if num_ships == 0:
                         break
@@ -157,9 +168,12 @@ class SeaBattle:
                 self.battle_screen.message_player_hits(sk)
                 input = self.battle_screen.pause_input()
                 self.orders = self.battle_screen.interpret_char(input, self.orders)
-                
+
                 # Check if some ships ran away
-                if random.randint(0, s0 - 1) > int(num_ships * 0.6 / battle_type) and num_ships > 2:
+                if (
+                    random.randint(0, s0 - 1) > int(num_ships * 0.6 / battle_type)
+                    and num_ships > 2
+                ):
                     divisor = num_ships // 3 // battle_type
                     if divisor == 0:
                         divisor = 1
@@ -168,7 +182,9 @@ class SeaBattle:
                         ran = 1
 
                     num_ships -= ran
-                    self.battle_screen.fight_stats(num_ships, self.orders, self.game.guns)
+                    self.battle_screen.fight_stats(
+                        num_ships, self.orders, self.game.guns
+                    )
                     self.battle_screen.message_battle_ships_escaped(ran)
 
                     # Check for Li Yuen's intervention when ships run away
@@ -177,7 +193,10 @@ class SeaBattle:
 
                     if num_ships <= 10:
                         for i in range(9, -1, -1):
-                            if self.num_on_screen > num_ships and self.ships_on_screen[i] > 0:
+                            if (
+                                self.num_on_screen > num_ships
+                                and self.ships_on_screen[i] > 0
+                            ):
                                 self.ships_on_screen[i] = 0
                                 self.num_on_screen -= 1
 
@@ -197,17 +216,26 @@ class SeaBattle:
                 total = 0
                 self.battle_screen.message_battle_throw_cargo_interface(self.game.hold_)
 
-                while choice not in [ord('O'), ord('o'), ord('S'), ord('s'), 
-                                   ord('A'), ord('a'), ord('G'), ord('g'), ord('*')]:
+                while choice not in [
+                    ord("O"),
+                    ord("o"),
+                    ord("S"),
+                    ord("s"),
+                    ord("A"),
+                    ord("a"),
+                    ord("G"),
+                    ord("g"),
+                    ord("*"),
+                ]:
                     choice = self.game.screen.keyboard.get_one()
 
-                if choice in [ord('O'), ord('o')]:
+                if choice in [ord("O"), ord("o")]:
                     choice = 0
-                elif choice in [ord('S'), ord('s')]:
+                elif choice in [ord("S"), ord("s")]:
                     choice = 1
-                elif choice in [ord('A'), ord('a')]:
+                elif choice in [ord("A"), ord("a")]:
                     choice = 2
-                elif choice in [ord('G'), ord('g')]:
+                elif choice in [ord("G"), ord("g")]:
                     choice = 3
                 else:
                     choice = 4
@@ -216,7 +244,9 @@ class SeaBattle:
                     self.battle_screen.message_battle_throw_cargo_amount()
 
                     amount = self.game.screen.keyboard.get_num(9)
-                    if self.game.hold_[choice] > 0 and (amount == -1 or amount > self.game.hold_[choice]):
+                    if self.game.hold_[choice] > 0 and (
+                        amount == -1 or amount > self.game.hold_[choice]
+                    ):
                         amount = self.game.hold_[choice]
                     total = self.game.hold_[choice]
                 else:
@@ -227,14 +257,14 @@ class SeaBattle:
                     if choice < 4:
                         self.game.hold_[choice] -= amount
                         self.game.hold += amount
-                        self.ok += (amount // 10)
+                        self.ok += amount // 10
                     else:
                         self.game.hold_[0] = 0
                         self.game.hold_[1] = 0
                         self.game.hold_[2] = 0
                         self.game.hold_[3] = 0
                         self.game.hold += total
-                        self.ok += (total // 10)
+                        self.ok += total // 10
                     input = self.battle_screen.pause_input()
                 else:
                     self.battle_screen.message_battle_throw_cargo_empty()
@@ -257,17 +287,22 @@ class SeaBattle:
                 else:
                     self.battle_screen.message_couldnt_lose()
                     input = self.battle_screen.pause_input()
-                    
+
                     if num_ships > 2 and random.randint(0, 4) == 0:
                         lost = (random.randint(0, num_ships - 1) // 2) + 1
 
                         num_ships -= lost
-                        self.battle_screen.fight_stats(num_ships, self.orders, self.game.guns)
+                        self.battle_screen.fight_stats(
+                            num_ships, self.orders, self.game.guns
+                        )
                         self.battle_screen.message_battle_ships_escaped(lost)
 
                         if num_ships <= 10:
                             for i in range(9, -1, -1):
-                                if self.num_on_screen > num_ships and self.ships_on_screen[i] > 0:
+                                if (
+                                    self.num_on_screen > num_ships
+                                    and self.ships_on_screen[i] > 0
+                                ):
                                     self.ships_on_screen[i] = 0
                                     self.num_on_screen -= 1
 
@@ -276,7 +311,9 @@ class SeaBattle:
                                     self.battle_screen.clear_lorcha(x, y)
                                     time.sleep(0.1)
 
-                            self.battle_screen.message_ship_ind(num_ships > self.num_on_screen)
+                            self.battle_screen.message_ship_ind(
+                                num_ships > self.num_on_screen
+                            )
             input = self.battle_screen.pause_input()
             self.orders = self.battle_screen.interpret_char(input, self.orders)
             # Handle enemy firing
@@ -291,17 +328,23 @@ class SeaBattle:
 
                 # Calculate damage
                 i = min(num_ships, 15)
-                if (self.game.guns > 0 and 
-                    (random.randint(0, 99) < int((self.game.damage / self.game.capacity) * 100) or
-                     int((self.game.damage / self.game.capacity) * 100) > 80)):
+                if self.game.guns > 0 and (
+                    random.randint(0, 99)
+                    < int((self.game.damage / self.game.capacity) * 100)
+                    or int((self.game.damage / self.game.capacity) * 100) > 80
+                ):
                     i = 1
                     self.game.guns -= 1
                     self.game.hold += 10
-                    self.battle_screen.fight_stats(num_ships, self.orders, self.game.guns)
+                    self.battle_screen.fight_stats(
+                        num_ships, self.orders, self.game.guns
+                    )
                     self.battle_screen.message_battle_gun_hit()
                     input = self.battle_screen.pause_input()
                 # Apply damage regardless of debug mode
-                self.game.damage += int((self.game.ed * i * battle_type) * random.random() + (i / 2))
+                self.game.damage += int(
+                    (self.game.ed * i * battle_type) * random.random() + (i / 2)
+                )
 
                 # Check for Li Yuen's intervention
                 if battle_type == GENERIC and random.randint(0, 19) == 0:
@@ -312,4 +355,4 @@ class SeaBattle:
             self.battle_screen.fight_stats(0, self.orders, self.game.guns)
             return BATTLE_WON  # Victory!
         else:
-            return BATTLE_FLED 
+            return BATTLE_FLED

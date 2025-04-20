@@ -3,6 +3,7 @@ import random
 import time
 from constants import *
 
+
 class BattleScreen:
     def __init__(self, game):
         self.game = game
@@ -19,7 +20,6 @@ class BattleScreen:
         self.game.screen.stdscr.addstr("\\_____/ ")
         self.game.screen.stdscr.refresh()
 
-
     def clear_lorcha(self, x: int, y: int) -> None:
         """Clear a lorcha from given coordinates"""
         self.game.screen.stdscr.move(y, x)
@@ -31,7 +31,7 @@ class BattleScreen:
         self.game.screen.stdscr.move(y + 3, x)
         self.game.screen.stdscr.addstr("        ")
         self.game.screen.stdscr.refresh()
-        
+
     def draw_blast(self, x: int, y: int) -> None:
         """Draw a blast effect at given coordinates"""
         self.game.screen.stdscr.move(y, x)
@@ -119,14 +119,18 @@ class BattleScreen:
         """Display current battle status"""
         self.game.screen.stdscr.move(3, 0)
         self.game.screen.stdscr.clrtoeol()
-        self.game.screen.stdscr.addstr(f"Current seaworthiness: {status_texts[int(status // 20)]} ({status}%)")
+        self.game.screen.stdscr.addstr(
+            f"Current seaworthiness: {status_texts[int(status // 20)]} ({status}%)"
+        )
         self.game.screen.stdscr.refresh()
 
-    def message_battle_orders(self) -> None: 
+    def message_battle_orders(self) -> None:
         """Display battle orders prompt"""
         self.game.screen.stdscr.move(3, 0)
         self.game.screen.stdscr.clrtoeol()
-        self.game.screen.stdscr.addstr("Taipan, what shall we do??    (f=fight, r=run, t=throw cargo)")
+        self.game.screen.stdscr.addstr(
+            "Taipan, what shall we do??    (f=fight, r=run, t=throw cargo)"
+        )
         self.game.screen.stdscr.refresh()
         self.game.screen.stdscr.timeout(-1)
 
@@ -246,13 +250,12 @@ class BattleScreen:
         self.game.screen.stdscr.clrtoeol()
         self.game.screen.stdscr.addstr("The buggers hit a gun, Taipan!!")
         self.game.screen.stdscr.refresh()
-        
+
     def message_player_hits(self, sk: int) -> None:
         if sk > 0:
             self.game.screen.stdscr.addstr(f"Sunk {sk} of the buggers, Taipan!")
         else:
             self.game.screen.stdscr.addstr("Hit 'em, but didn't sink 'em, Taipan!")
-        
 
     def fight_stats(self, ships: int, orders: int, guns: int) -> None:
         """Display battle statistics during sea battle"""
@@ -298,7 +301,6 @@ class BattleScreen:
         self.game.screen.stdscr.move(16, 0)
         self.game.screen.stdscr.refresh()
 
-        
     def message_prepare(self) -> None:
         """Prepare screen for battle"""
         self.game.screen.stdscr.clear()
@@ -333,25 +335,25 @@ class BattleScreen:
         self.game.screen.stdscr.clrtoeol()
         self.game.screen.stdscr.addstr("Couldn't lose 'em.")
         self.game.screen.stdscr.refresh()
-        
+
     def pause_input(self, timeout: int = M_PAUSE) -> int:
         self.game.screen.stdscr.timeout(timeout)
         i = self.game.screen.stdscr.getch()
         self.game.screen.stdscr.timeout(-1)
         return i
-        
+
     def message_get_order_wait(self) -> int:
-        char = ''
-        while char not in [ord('F'), ord('f'), ord('R'), ord('r'), ord('T'), ord('t')]:
+        char = ""
+        while char not in [ord("F"), ord("f"), ord("R"), ord("r"), ord("T"), ord("t")]:
             char = self.game.screen.stdscr.getch()
         return self.interpret_char(char)
-        
+
     def interpret_char(self, char: int, orders: int = 0) -> int:
-        if char in [ord('F'), ord('f')]:
+        if char in [ord("F"), ord("f")]:
             return 1
-        elif char in [ord('R'), ord('r')]:
+        elif char in [ord("R"), ord("r")]:
             return 2
-        elif char in [ord('T'), ord('t')]:
+        elif char in [ord("T"), ord("t")]:
             return 3
         else:
             return orders

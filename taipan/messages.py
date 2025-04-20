@@ -1,14 +1,14 @@
 import curses
 
 from constants import *
-from keyboard import Keyboard # type: ignore
+from keyboard import Keyboard  # type: ignore
+
 
 class Messages:
     def __init__(self):
         self.init_curses()
-        self.keyboard = Keyboard(self.stdscr)  # Initialize keyboard here    
+        self.keyboard = Keyboard(self.stdscr)  # Initialize keyboard here
 
-        
     def init_curses(self):
         """Initialize curses and set up the screen"""
         self.stdscr = curses.initscr()
@@ -21,7 +21,7 @@ class Messages:
         curses.init_pair(3, curses.COLOR_YELLOW, curses.COLOR_BLACK)
         curses.init_pair(4, curses.COLOR_BLUE, curses.COLOR_BLACK)
         curses.curs_set(0)  # Hide cursor
-        
+
     def cleanup_curses(self):
         """Clean up curses before exiting"""
         if self.stdscr:
@@ -29,7 +29,7 @@ class Messages:
             self.stdscr.keypad(False)
             curses.echo()
             curses.endwin()
-            
+
     def fancy_numbers(self, num: float) -> str:
         """
         Format numbers in a fancy way, converting large numbers to millions with decimal points.
@@ -54,18 +54,30 @@ class Messages:
                 return f"{num1} Million"
         else:
             return str(int(num))
-            
-    def port_stats(self, status: int,
-                   firm: str, hkw_: list[int], hold: int, hold_: list[int],
-                   cash: int, bank: int, guns: int, debt: int, month: int, year: int, port: str) -> None:
-        """Display port statistics screen."""        
+
+    def port_stats(
+        self,
+        status: int,
+        firm: str,
+        hkw_: list[int],
+        hold: int,
+        hold_: list[int],
+        cash: int,
+        bank: int,
+        guns: int,
+        debt: int,
+        month: int,
+        year: int,
+        port: str,
+    ) -> None:
+        """Display port statistics screen."""
         # Clear screen and prepare display
         self.stdscr.clear()
-        
+
         # Center firm name
         spacer = 12 - (len(firm) // 2)
         self.stdscr.addstr(0, spacer, f"Firm: {firm}, Hong Kong")
-        
+
         # Draw the main display boxes
         self.stdscr.addstr(1, 0, " ______________________________________")
         self.stdscr.addstr(2, 0, "|Hong Kong Warehouse                   |     Date")
@@ -77,7 +89,9 @@ class Messages:
         self.stdscr.addstr(8, 0, "|Hold               Guns               |     Debt")
         self.stdscr.addstr(9, 0, "|   Opium                              |")
         self.stdscr.addstr(10, 0, "|   Silk                               |")
-        self.stdscr.addstr(11, 0, "|   Arms                               |  Ship Status")
+        self.stdscr.addstr(
+            11, 0, "|   Arms                               |  Ship Status"
+        )
         self.stdscr.addstr(12, 0, "|   General                            |")
         self.stdscr.addstr(13, 0, "|______________________________________|")
         self.stdscr.addstr(14, 0, "Cash:               Bank:")
@@ -156,7 +170,7 @@ class Messages:
         self.stdscr.attroff(curses.A_REVERSE)
 
         self.stdscr.refresh()
-        
+
     def name_firm(self) -> str:
         """Set the firm name. In debug mode, sets to 'debug'."""
         if DEBUG:
@@ -169,13 +183,13 @@ class Messages:
 
             while character < 22:
                 input_char = self.stdscr.getch()
-                if input_char == ord('\n'):
+                if input_char == ord("\n"):
                     return firm
-                elif ((input_char == 8 or input_char == 127) and character == 0):
+                elif (input_char == 8 or input_char == 127) and character == 0:
                     self.stdscr.refresh()
                 elif input_char == 8 or input_char == 127:
                     self.stdscr.addch(8)
-                    self.stdscr.addch(' ')
+                    self.stdscr.addch(" ")
                     self.stdscr.addch(8)
                     firm = firm[:-1]
                     character -= 1
@@ -256,7 +270,7 @@ class Messages:
         self.stdscr.timeout(M_PAUSE)
         self.stdscr.getch()
         self.stdscr.timeout(-1)
-        
+
         self.stdscr.move(18, 0)
         self.stdscr.clrtobot()
         self.stdscr.addstr("He is reminded of a fabled barbarian\n")
@@ -274,28 +288,56 @@ class Messages:
         curses.flushinp()
         self.stdscr.clear()
         self.stdscr.addstr("\n")
-        self.stdscr.addstr("         _____  _    ___ ____   _    _   _               ===============\n")
-        self.stdscr.addstr("        |_   _|/ \\  |_ _|  _ \\ / \\  | \\ | |              Created by:\n")
-        self.stdscr.addstr("          | | / _ \\  | || |_) / _ \\ |  \\| |                 Art Canfil\n")
+        self.stdscr.addstr(
+            "         _____  _    ___ ____   _    _   _               ===============\n"
+        )
+        self.stdscr.addstr(
+            "        |_   _|/ \\  |_ _|  _ \\ / \\  | \\ | |              Created by:\n"
+        )
+        self.stdscr.addstr(
+            "          | | / _ \\  | || |_) / _ \\ |  \\| |                 Art Canfil\n"
+        )
         self.stdscr.addstr("          | |/ ___ \\ | ||  __/ ___ \\| |\\  |\n")
-        self.stdscr.addstr("          |_/_/   \\_\\___|_| /_/   \\_\\_| \\_|              ===============\n")
-        self.stdscr.addstr("                                                         Programmed by:\n")
-        self.stdscr.addstr("   A game based on the China trade of the 1800's            Jay Link\n")
+        self.stdscr.addstr(
+            "          |_/_/   \\_\\___|_| /_/   \\_\\_| \\_|              ===============\n"
+        )
+        self.stdscr.addstr(
+            "                                                         Programmed by:\n"
+        )
+        self.stdscr.addstr(
+            "   A game based on the China trade of the 1800's            Jay Link\n"
+        )
         self.stdscr.addstr("\n")
-        self.stdscr.addstr("                      ~~|     ,                          jlink@ilbbs.com\n")
+        self.stdscr.addstr(
+            "                      ~~|     ,                          jlink@ilbbs.com\n"
+        )
         self.stdscr.addstr("                       ,|`-._/|\n")
-        self.stdscr.addstr("                     .' |   /||\\                         ===============\n")
-        self.stdscr.addstr("                   .'   | ./ ||`\\                         Copyright (c)\n")
-        self.stdscr.addstr("                  / `-. |/._ ||  \\                         1978 - 2002\n")
-        self.stdscr.addstr("                 /     `||  `|;-._\\                         Art Canfil\n")
+        self.stdscr.addstr(
+            "                     .' |   /||\\                         ===============\n"
+        )
+        self.stdscr.addstr(
+            "                   .'   | ./ ||`\\                         Copyright (c)\n"
+        )
+        self.stdscr.addstr(
+            "                  / `-. |/._ ||  \\                         1978 - 2002\n"
+        )
+        self.stdscr.addstr(
+            "                 /     `||  `|;-._\\                         Art Canfil\n"
+        )
         self.stdscr.addstr("                 |      ||   ||   \\\n")
-        self.stdscr.addstr("~^~_-~^~=~^~~^= /       ||   ||__  \\~^=~^~-~^~_~^~=      ===============\n")
-        self.stdscr.addstr(" ~=~^~ _~^~ =~ `--------|`---||  `\"-`___~~^~ =_~^=        Press ")
+        self.stdscr.addstr(
+            "~^~_-~^~=~^~~^= /       ||   ||__  \\~^=~^~-~^~_~^~=      ===============\n"
+        )
+        self.stdscr.addstr(
+            ' ~=~^~ _~^~ =~ `--------|`---||  `"-`___~~^~ =_~^=        Press '
+        )
         self.stdscr.attron(curses.A_REVERSE)
         self.stdscr.addstr("ANY")
         self.stdscr.attroff(curses.A_REVERSE)
         self.stdscr.addstr(" key\n")
-        self.stdscr.addstr("~ ~^~=~^_~^~ =~ \\~~~~~~~'~~~~'~~~~/~~`` ~=~^~ ~^=           to start.\n")
+        self.stdscr.addstr(
+            "~ ~^~=~^_~^~ =~ \\~~~~~~~'~~~~'~~~~/~~`` ~=~^~ ~^=           to start.\n"
+        )
         self.stdscr.addstr(" ~^=~^~_~-=~^~ ^ `--------------'~^~=~^~_~^=~^~=~\n")
         curses.curs_set(0)
         self.stdscr.refresh()
@@ -313,7 +355,7 @@ class Messages:
         self.stdscr.addstr("|                                       |\n")
         self.stdscr.addstr("|     Firm:                             |\n")
         self.stdscr.addstr("|           ----------------------      |\n")
-        self.stdscr.addstr("|_______________________________________|\n")        
+        self.stdscr.addstr("|_______________________________________|\n")
         self.stdscr.move(12, 12)
         self.stdscr.refresh()
 
@@ -342,7 +384,9 @@ class Messages:
         else:
             self.stdscr.addstr("fine")
         self.stdscr.addstr("\nship for one with 50 more capacity by\n")
-        self.stdscr.addstr(f"paying an additional {self.fancy_numbers(amount)}, Taipan? ")
+        self.stdscr.addstr(
+            f"paying an additional {self.fancy_numbers(amount)}, Taipan? "
+        )
         self.stdscr.refresh()
 
     def message_new_gun(self, amount: int) -> None:
@@ -368,7 +412,7 @@ class Messages:
         self.stdscr.timeout(L_PAUSE)
         self.stdscr.getch()
         self.stdscr.timeout(-1)
-    
+
     def message_li_yuen(self) -> None:
         self.stdscr.move(16, 0)
         self.stdscr.clrtobot()
@@ -380,19 +424,21 @@ class Messages:
         self.stdscr.timeout(M_PAUSE)
         self.stdscr.getch()
         self.stdscr.timeout(-1)
-    
+
     def message_robbed(self, robbed: int) -> None:
         self.stdscr.move(16, 0)
         self.stdscr.clrtobot()
         self.stdscr.addstr("Comprador's Report\n\n")
         self.stdscr.addstr("Bad Joss!!\n")
         self.stdscr.addstr("You've been beaten up and\n")
-        self.stdscr.addstr(f"robbed of {self.fancy_numbers(robbed)} in cash, Taipan!!\n")
+        self.stdscr.addstr(
+            f"robbed of {self.fancy_numbers(robbed)} in cash, Taipan!!\n"
+        )
         self.stdscr.refresh()
         self.stdscr.timeout(M_PAUSE)
         self.stdscr.getch()
         self.stdscr.timeout(-1)
-    
+
     def message_warehouse_robbery(self) -> None:
         self.stdscr.move(16, 0)
         self.stdscr.clrtobot()
@@ -403,7 +449,7 @@ class Messages:
         self.stdscr.timeout(L_PAUSE)
         self.stdscr.getch()
         self.stdscr.timeout(-1)
-    
+
     def message_opium_seized(self, fine: int) -> None:
         self.stdscr.move(16, 0)
         self.stdscr.clrtobot()
@@ -508,7 +554,9 @@ class Messages:
         self.stdscr.getch()
         self.stdscr.timeout(-1)
 
-    def message_final_stats(self, cash: int, capacity: int, guns: int, years: int, month: int, time: int) -> None:
+    def message_final_stats(
+        self, cash: int, capacity: int, guns: int, years: int, month: int, time: int
+    ) -> None:
         """Display final game statistics and rating"""
         self.stdscr.clear()
         self.stdscr.addstr("Your final status:\n\n")
@@ -649,7 +697,7 @@ class Messages:
             self.stdscr.addstr("The buggers got us, Taipan!!!\n")
             self.stdscr.addstr("It's all over, now!!!")
         self.stdscr.refresh()
-    
+
     def message_pirates_help(self, location: str):
         self.stdscr.move(6, 43)
         self.stdscr.addstr(" ")
@@ -809,7 +857,7 @@ class Messages:
         self.stdscr.move(23, 0)
         self.stdscr.addstr("I buy, Taipan: ")
         self.stdscr.refresh()
-        
+
         # Add appropriate spacing based on number size
         if amount < 100:
             space = "    "
@@ -821,7 +869,7 @@ class Messages:
             space = " "
         else:
             space = ""
-            
+
         self.stdscr.addstr(f"{space}{amount}")
         self.stdscr.attroff(curses.A_REVERSE)
         self.stdscr.refresh()
@@ -967,7 +1015,7 @@ class Messages:
         self.stdscr.clrtobot()
         self.stdscr.addstr("Comprador's Report\n\n")
         self.stdscr.addstr("Taipan, Mc Henry from the Hong Kong\n")
-        self.stdscr.addstr("Shipyards has arrived!!  He says, \"I see\n")
+        self.stdscr.addstr('Shipyards has arrived!!  He says, "I see\n')
         self.stdscr.addstr("ye've a wee bit of damage to yer ship.\n")
         self.stdscr.addstr("Will ye be wanting repairs? ")
         self.stdscr.refresh()
@@ -1076,4 +1124,4 @@ class Messages:
         self.stdscr.refresh()
         self.stdscr.timeout(L_PAUSE)
         self.stdscr.getch()
-        self.stdscr.timeout(-1) 
+        self.stdscr.timeout(-1)

@@ -11,9 +11,10 @@ from sea_battle import SeaBattle
 from constants import *
 from messages import Messages
 
+
 class TaipanGame:
     def __init__(self):
-        self.screen = Messages();
+        self.screen = Messages()
         # Game state
         self.firm = ""  # Firm name (was char[23])
 
@@ -28,19 +29,25 @@ class TaipanGame:
         # Combat stats
         self.ec = BASE_ENEMY_HEALTH
         self.ed = BASE_ENEMY_DAMAGE
-        
+
         self.locations = [
-            "At sea", "Hong Kong", "Shanghai", "Nagasaki",
-            "Saigon", "Manila", "Singapore", "Batavia"
+            "At sea",
+            "Hong Kong",
+            "Shanghai",
+            "Nagasaki",
+            "Saigon",
+            "Manila",
+            "Singapore",
+            "Batavia",
         ]
 
         # Prices and inventory
         self.price = [0] * 4  # Current prices
         self.base_price = [
             [1000, 11, 16, 15, 14, 12, 10, 13],
-            [100,  11, 14, 15, 16, 10, 13, 12],
-            [10,   12, 16, 10, 11, 13, 14, 15],
-            [1,    10, 11, 12, 13, 14, 15, 16]
+            [100, 11, 14, 15, 16, 10, 13, 12],
+            [10, 12, 16, 10, 11, 13, 14, 15],
+            [1, 10, 11, 12, 13, 14, 15, 16],
         ]
         self.hkw_ = [0] * 4  # Hong Kong warehouse
         self.hold_ = [0] * 4  # Current cargo hold
@@ -76,10 +83,10 @@ class TaipanGame:
             self.screen.message_cash_or_guns()
 
             choice = 0
-            while choice not in [ord('1'), ord('2')]:
+            while choice not in [ord("1"), ord("2")]:
                 choice = self.screen.keyboard.get_one()
 
-            if choice == ord('1'):
+            if choice == ord("1"):
                 self.cash = 400
                 self.debt = 5000
                 self.hold = 60
@@ -98,15 +105,30 @@ class TaipanGame:
         """Set prices for merchandise in current port based on base prices and random factors."""
         # Original C logic: price = (base_price[port] / 2) * (random 1-3) * base_price[0]
         for i in range(4):
-            self.price[i] = (self.base_price[i][self.port] / 2) * (random.randint(1, 3)) * self.base_price[i][0]
+            self.price[i] = (
+                (self.base_price[i][self.port] / 2)
+                * (random.randint(1, 3))
+                * self.base_price[i][0]
+            )
 
     def port_stats(self) -> None:
         """Display port statistics screen."""
         # Calculate status percentage
         status = 100 - ((self.damage / self.capacity) * 100)
-        self.screen.port_stats(status, self.firm, self.hkw_, self.hold, self.hold_,
-                               self.cash, self.bank, self.guns, self.debt,
-                               self.month, self.year, self.locations[self.port])
+        self.screen.port_stats(
+            status,
+            self.firm,
+            self.hkw_,
+            self.hold,
+            self.hold_,
+            self.cash,
+            self.bank,
+            self.guns,
+            self.debt,
+            self.month,
+            self.year,
+            self.locations[self.port],
+        )
 
     def port_choices(self) -> int:
         """Display port menu choices and get user selection"""
@@ -121,19 +143,48 @@ class TaipanGame:
             choice = self.screen.keyboard.get_one()
             if self.port == 1:
                 if can_retire:
-                    if choice in [ord('B'), ord('b'), ord('S'), ord('s'), 
-                                ord('V'), ord('v'), ord('T'), ord('t'),
-                                ord('W'), ord('w'), ord('Q'), ord('q'),
-                                ord('R'), ord('r')]:
+                    if choice in [
+                        ord("B"),
+                        ord("b"),
+                        ord("S"),
+                        ord("s"),
+                        ord("V"),
+                        ord("v"),
+                        ord("T"),
+                        ord("t"),
+                        ord("W"),
+                        ord("w"),
+                        ord("Q"),
+                        ord("q"),
+                        ord("R"),
+                        ord("r"),
+                    ]:
                         break
                 else:
-                    if choice in [ord('B'), ord('b'), ord('S'), ord('s'),
-                                ord('V'), ord('v'), ord('T'), ord('t'),
-                                ord('W'), ord('w'), ord('Q'), ord('q')]:
+                    if choice in [
+                        ord("B"),
+                        ord("b"),
+                        ord("S"),
+                        ord("s"),
+                        ord("V"),
+                        ord("v"),
+                        ord("T"),
+                        ord("t"),
+                        ord("W"),
+                        ord("w"),
+                        ord("Q"),
+                        ord("q"),
+                    ]:
                         break
             else:
-                if choice in [ord('B'), ord('b'), ord('S'), ord('s'),
-                            ord('Q'), ord('q')]:
+                if choice in [
+                    ord("B"),
+                    ord("b"),
+                    ord("S"),
+                    ord("s"),
+                    ord("Q"),
+                    ord("q"),
+                ]:
                     break
 
         return choice
@@ -142,17 +193,19 @@ class TaipanGame:
         """Handle ship upgrades"""
         choice = 0
         time = ((self.year - 1860) * 12) + self.month
-        amount = random.randint(0, 1000 * (time + 5) // 6) * (self.capacity // 50) + 1000
+        amount = (
+            random.randint(0, 1000 * (time + 5) // 6) * (self.capacity // 50) + 1000
+        )
 
         if self.cash < amount:
             return
 
         self.screen.message_new_ship(self.damage, amount)
 
-        while choice not in [ord('Y'), ord('y'), ord('N'), ord('n')]:
+        while choice not in [ord("Y"), ord("y"), ord("N"), ord("n")]:
             choice = self.screen.keyboard.get_one()
 
-        if choice in [ord('Y'), ord('y')]:
+        if choice in [ord("Y"), ord("y")]:
             self.cash -= amount
             self.hold += 50
             self.capacity += 50
@@ -172,9 +225,9 @@ class TaipanGame:
         if self.cash < amount or self.hold < 10:
             return
         self.screen.message_new_gun(amount)
-        while choice not in [ord('Y'), ord('y'), ord('N'), ord('n')]:
+        while choice not in [ord("Y"), ord("y"), ord("N"), ord("n")]:
             choice = self.screen.keyboard.get_one()
-        if choice in [ord('Y'), ord('y')]:
+        if choice in [ord("Y"), ord("y")]:
             self.cash -= amount
             self.hold -= 10
             self.guns += 1
@@ -187,12 +240,20 @@ class TaipanGame:
         self.screen.message_wu_business()
         if self.screen.keyboard.choice_yes_no():
             # You're out of cash, bank, guns, and hold.   Li Yeun bails you out.
-            if (self.cash == 0 and self.bank == 0 and self.guns == 0 and
-                self.hold_[0] == 0 and self.hkw_[0] == 0 and
-                self.hold_[1] == 0 and self.hkw_[1] == 0 and
-                self.hold_[2] == 0 and self.hkw_[2] == 0 and
-                self.hold_[3] == 0 and self.hkw_[3] == 0):
-                
+            if (
+                self.cash == 0
+                and self.bank == 0
+                and self.guns == 0
+                and self.hold_[0] == 0
+                and self.hkw_[0] == 0
+                and self.hold_[1] == 0
+                and self.hkw_[1] == 0
+                and self.hold_[2] == 0
+                and self.hkw_[2] == 0
+                and self.hold_[3] == 0
+                and self.hkw_[3] == 0
+            ):
+
                 i = random.randint(500, 1999)
                 j = random.randint(0, 1999) * self.wu_bailout + 1500
                 self.wu_bailout += 1
@@ -201,10 +262,10 @@ class TaipanGame:
                     self.screen.message_wu_pity(i, j)
 
                     choice = self.screen.keyboard.get_one()
-                    if choice in [ord('N'), ord('n')]:
+                    if choice in [ord("N"), ord("n")]:
                         self.screen.message_wu_game_over()
                         self.final_stats()
-                    elif choice in [ord('Y'), ord('y')]:
+                    elif choice in [ord("Y"), ord("y")]:
                         self.cash += i
                         self.debt += j
                         self.port_stats()
@@ -215,14 +276,14 @@ class TaipanGame:
 
                 wu = self.screen.keyboard.get_num(9)
                 if wu == -1:
-                        wu = min(self.cash, self.debt)
+                    wu = min(self.cash, self.debt)
                 if wu <= self.cash:
                     if wu > self.debt:
                         self.screen.message_paid_in_full()
                         wu = self.debt
                         self.cash -= wu
                         if wu > self.debt and self.debt > 0:
-                            self.debt -= (wu + 1)
+                            self.debt -= wu + 1
                         else:
                             self.debt -= wu
                     else:
@@ -234,10 +295,10 @@ class TaipanGame:
 
                 wu = self.screen.keyboard.get_num(9)
                 if wu == -1:
-                        wu = self.cash * 2
+                    wu = self.cash * 2
                 if wu <= (self.cash * 2):
-                        self.cash += wu
-                        self.debt += wu
+                    self.cash += wu
+                    self.debt += wu
                 else:
                     self.screen.message_wu_too_much()
 
@@ -301,19 +362,19 @@ class TaipanGame:
         # Get item choice
         while True:
             choice_char = self.screen.keyboard.get_one()
-            if choice_char in [ord('O'), ord('o')]:
+            if choice_char in [ord("O"), ord("o")]:
                 choice = 0
                 break
-            elif choice_char in [ord('S'), ord('s')]:
+            elif choice_char in [ord("S"), ord("s")]:
                 choice = 1
                 break
-            elif choice_char in [ord('A'), ord('a')]:
+            elif choice_char in [ord("A"), ord("a")]:
                 choice = 2
                 break
-            elif choice_char in [ord('G'), ord('g')]:
+            elif choice_char in [ord("G"), ord("g")]:
                 choice = 3
                 break
-            
+
         # Get amount to buy
         while True:
             # Calculate how much player can afford
@@ -326,7 +387,7 @@ class TaipanGame:
                 break
 
         # Update game state
-        self.cash -= (amount * self.price[choice])
+        self.cash -= amount * self.price[choice]
         self.hold_[choice] += amount
         self.hold -= amount
         return
@@ -336,13 +397,13 @@ class TaipanGame:
         self.screen.message_sell_prompt()
         choice_char = self.screen.keyboard.get_one()
         choice = 0
-        if choice_char in [ord('O'), ord('o')]:
+        if choice_char in [ord("O"), ord("o")]:
             choice = 0
-        elif choice_char in [ord('S'), ord('s')]:
+        elif choice_char in [ord("S"), ord("s")]:
             choice = 1
-        elif choice_char in [ord('A'), ord('a')]:
+        elif choice_char in [ord("A"), ord("a")]:
             choice = 2
-        elif choice_char in [ord('G'), ord('g')]:
+        elif choice_char in [ord("G"), ord("g")]:
             choice = 3
 
         # Get amount to sell
@@ -356,7 +417,7 @@ class TaipanGame:
                 self.hold_[choice] -= amount
                 break
 
-        self.cash += (amount * self.price[choice])
+        self.cash += amount * self.price[choice]
         self.hold += amount
 
     def visit_bank(self) -> None:
@@ -395,10 +456,16 @@ class TaipanGame:
 
     def transfer(self) -> None:
         """Handle cargo transfers between ship's hold and warehouse"""
-        if (self.hkw_[0] == 0 and self.hold_[0] == 0 and
-            self.hkw_[1] == 0 and self.hold_[1] == 0 and
-            self.hkw_[2] == 0 and self.hold_[2] == 0 and
-            self.hkw_[3] == 0 and self.hold_[3] == 0):
+        if (
+            self.hkw_[0] == 0
+            and self.hold_[0] == 0
+            and self.hkw_[1] == 0
+            and self.hold_[1] == 0
+            and self.hkw_[2] == 0
+            and self.hold_[2] == 0
+            and self.hkw_[3] == 0
+            and self.hold_[3] == 0
+        ):
             self.screen.message_no_cargo()
             return
 
@@ -445,13 +512,13 @@ class TaipanGame:
                     else:
                         self.screen.message_not_enough()
         self.port_stats()
-        
+
     def offer_repairs(self) -> None:
         """Offer to repair the ship"""
         self.screen.message_mchenry_repairs()
 
         choice = self.screen.keyboard.get_one()
-        if choice in [ord('Y'), ord('y')]:
+        if choice in [ord("Y"), ord("y")]:
             self.repair_ship()
         self.port_stats()
 
@@ -460,8 +527,13 @@ class TaipanGame:
         percent = int((self.damage / self.capacity) * 100)
         time = ((self.year - 1860) * 12) + self.month
 
-        br = int((((60 * (time + 3) / 4) * random.random() +
-                 25 * (time + 3) / 4) * self.capacity / 50))
+        br = int(
+            (
+                ((60 * (time + 3) / 4) * random.random() + 25 * (time + 3) / 4)
+                * self.capacity
+                / 50
+            )
+        )
         repair_price = (br * self.damage) + 1
         amount = 0
 
@@ -475,7 +547,7 @@ class TaipanGame:
 
             if amount > self.cash:
                 amount -= self._handle_insufficient_funds(amount)
-                
+
             if amount <= self.cash:
                 self.cash -= amount
                 assert br > 0  # Don't divide by zero
@@ -490,7 +562,7 @@ class TaipanGame:
         """Handle case where player doesn't have enough cash"""
         self.screen.message_insufficient_funds()
         self.screen.message_wu_difference_offer()
-        
+
         if self.screen.keyboard.choice_yes_no():
             self.screen.message_wu_loan_terms()
             loan = amount - self.cash
@@ -520,7 +592,7 @@ class TaipanGame:
         self.screen.message_mchenry_cost(amount)
 
         choice = self.screen.keyboard.get_one()
-        if choice in [ord('Y'), ord('y')]:
+        if choice in [ord("Y"), ord("y")]:
             self.cash -= amount
             self.damage = 0
             self.screen.message_repairs_complete()
@@ -553,14 +625,15 @@ class TaipanGame:
                 num_ships = 9999
             self.screen.message_hostile_ships(num_ships)
             result = self.sea_battle(GENERIC, num_ships)
-            
+
         if result == BATTLE_INTERRUPTED:
             self.port_stats()
             self.screen.message_pirates_help(self.locations[0])
 
         # Handle Li Yuen's pirates encounter
-        if ((result == BATTLE_NOT_FINISHED and random.randint(0, 3 + (8 * self.li)) == 0) or 
-            result == BATTLE_INTERRUPTED):
+        if (
+            result == BATTLE_NOT_FINISHED and random.randint(0, 3 + (8 * self.li)) == 0
+        ) or result == BATTLE_INTERRUPTED:
             self.screen.message_li_yuen_pirates()
             if self.li > 0:
                 self.screen.message_good_joss()
@@ -579,7 +652,9 @@ class TaipanGame:
             elif result == BATTLE_FLED:  # Ran and got away.
                 self.screen.message_escaped()
             else:  # result == BATTLE_LOST - Ship lost!
-                assert result != BATTLE_INTERRUPTED  # Shouldn't get interrupted when fighting Li Yuen
+                assert (
+                    result != BATTLE_INTERRUPTED
+                )  # Shouldn't get interrupted when fighting Li Yuen
                 self.screen.message_all_over_now()
                 self.final_stats()
                 return
@@ -621,7 +696,14 @@ class TaipanGame:
         """Display final game statistics"""
         years = self.year - 1860
         time = ((self.year - 1860) * 12) + self.month
-        self.screen.message_final_stats(self.cash + self.bank - self.debt, self.capacity, self.guns, years, self.month, time)
+        self.screen.message_final_stats(
+            self.cash + self.bank - self.debt,
+            self.capacity,
+            self.guns,
+            years,
+            self.month,
+            time,
+        )
 
         if self.screen.keyboard.choice_yes_no():
             self.bank = 0
@@ -709,20 +791,20 @@ class TaipanGame:
 
                 # Main game loop
                 while True:
-                    while choice not in [ord('Q'), ord('q')]:
+                    while choice not in [ord("Q"), ord("q")]:
                         choice = self.port_choices()
-                        
-                        if choice in [ord('B'), ord('b')]:
+
+                        if choice in [ord("B"), ord("b")]:
                             self.buy()
-                        elif choice in [ord('S'), ord('s')]:
+                        elif choice in [ord("S"), ord("s")]:
                             self.sell()
-                        elif choice in [ord('V'), ord('v')]:
+                        elif choice in [ord("V"), ord("v")]:
                             self.visit_bank()
-                        elif choice in [ord('T'), ord('t')]:
+                        elif choice in [ord("T"), ord("t")]:
                             self.transfer()
-                        elif choice in [ord('W'), ord('w')]:
+                        elif choice in [ord("W"), ord("w")]:
                             self.elder_brother_wu()
-                        elif choice in [ord('R'), ord('r')]:
+                        elif choice in [ord("R"), ord("r")]:
                             self.retire()
 
                         self.port_stats()
@@ -831,6 +913,7 @@ class TaipanGame:
         self.hold -= amount
         self.hkw_[self.items.index(item)] += amount
 
+
 if __name__ == "__main__":
     game = TaipanGame()
-    game.main() 
+    game.main()
